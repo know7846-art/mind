@@ -1,6 +1,6 @@
 -- 마음체크 허브 - 유입/이벤트 로그 테이블
 -- Supabase 프로젝트(SQL Editor)에서 한 번만 실행하세요.
--- (js/js/api.js 와 동일한 Supabase 프로젝트: https://ymzcrjdzjolbebdjdilr.supabase.co)
+-- (마음체크 전용 Supabase 프로젝트: https://riilcevawcjnwgiiablw.supabase.co)
 
 create table if not exists hub_events (
   id bigint generated always as identity primary key,

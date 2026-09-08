@@ -23,7 +23,7 @@
 
 ## 배포 전 준비
 1. Supabase 프로젝트(SQL Editor)에서 `supabase_setup.sql` 실행 → `hub_events` 테이블 생성
-   - 기존 왓슈(청소년카페) 시스템과 같은 Supabase 프로젝트를 재사용합니다 (`js/api.js`와 동일한 URL/KEY).
+   - 마음체크 전용 Supabase 프로젝트(`https://riilcevawcjnwgiiablw.supabase.co`)를 사용합니다.
 2. `마음체크/` 폴더 전체를 정적 호스팅(GitHub Pages 등)에 배포
 3. `stats.html`의 관리자 비밀번호를 원하는 값으로 변경 권장
 
