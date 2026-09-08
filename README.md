@@ -10,7 +10,7 @@
 - `tarot/` — 기존 "고민타파 타로 상담프로그램" 이식본
 - `tests/love.html` — 연애 스타일 유형테스트 (8문항, 4가지 유형 + 찰떡궁합 결과, MBTI 테스트 형식)
 - `tests/loneliness.html`, `tests/stress.html`, `tests/mood.html` — 6문항 간이 자가검사 (점수/게이지형 결과)
-- `stats.html` — 유입경로/콘텐츠별 통계 (관리자 비밀번호: `mindcheck1388!`, `stats.html`에서 변경 가능)
+- `stats.html` — 유입경로/콘텐츠별 통계 (관리자 비밀번호: `Bcheon-MindCheck26!`, `stats.html`의 `tryLogin()` 함수에서 변경 가능)
 - `js/hub-core.js` — 유입경로(src) 추적 + Supabase 이벤트 로깅 + 센터 연결 CTA 공통 컴포넌트
 - `js/test-engine.js` — 검사 공통 엔진 (점수형 게이지 결과 / 유형(type) 카드 결과 둘 다 지원)
 - `css/hub.css` — 커버카드 갤러리, 인트로 체크리스트, 결과 카드(게이지·유형) 등 디자인 시스템
