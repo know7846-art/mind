@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="lonelyPink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffc2e0"/>
+      <stop offset="100%" stop-color="#ff8fc4"/>
+    </linearGradient>
+    <linearGradient id="lonelyBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bfe8ff"/>
+      <stop offset="100%" stop-color="#7ec4f7"/>
+    </linearGradient>
+    <radialGradient id="bubbleShine" cx="35%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="100" cy="168" rx="56" ry="9" fill="#000" opacity=".14"/>
+  <ellipse cx="100" cy="108" rx="76" ry="30" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2.2" transform="rotate(-6 100 108)"/>
+  <g>
+    <circle cx="76" cy="96" r="20" fill="url(#lonelyPink)"/>
+    <path d="M52 152 Q76 122 100 152 L96 158 Q76 138 56 158Z" fill="url(#lonelyPink)"/>
+    <circle cx="70" cy="90" r="10" fill="url(#bubbleShine)"/>
+  </g>
+  <g>
+    <circle cx="126" cy="102" r="18" fill="url(#lonelyBlue)"/>
+    <path d="M104 152 Q126 126 148 152 L144 158 Q126 140 108 158Z" fill="url(#lonelyBlue)"/>
+    <circle cx="120" cy="96" r="9" fill="url(#bubbleShine)"/>
+  </g>
+  <path d="M100 118 c-3-3-8-1-8 3 0 3 4 6 8 9 4-3 8-6 8-9 0-4-5-6-8-3Z" fill="#fff" opacity=".92"/>
+  <g fill="#fff">
+    <circle cx="46" cy="72" r="9" opacity=".85"/>
+    <circle cx="42" cy="70" r="3.4" opacity=".5"/>
+    <circle cx="156" cy="60" r="7" opacity=".8"/>
+    <circle cx="153" cy="58" r="2.6" opacity=".5"/>
+    <circle cx="150" cy="130" r="5" opacity=".7"/>
+  </g>
+  <g fill="#ffe9a8">
+    <path d="M150 40 l2.4 6.4 6.4 2.4 -6.4 2.4 -2.4 6.4 -2.4 -6.4 -6.4 -2.4 6.4 -2.4Z"/>
+    <path d="M40 130 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2Z"/>
+  </g>
+</svg>

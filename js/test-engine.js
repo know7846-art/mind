@@ -26,7 +26,7 @@ function runTest(config) {
     app.innerHTML = `
       <div class="intro-box">
         ${intro.badge ? `<span class="intro-badge" style="background:${intro.badgeBg || 'var(--primary-light)'};color:${intro.badgeColor || 'var(--primary-dark)'}">${intro.badge}</span>` : ''}
-        <div class="intro-emoji">${intro.emoji}</div>
+        <div class="intro-emoji">${intro.icon ? `<img src="${intro.icon}" alt="" class="intro-icon-img">` : intro.emoji}</div>
         <p class="intro-title">${intro.title}</p>
         <p class="intro-hook">${intro.hook}</p>
         ${checklist ? `<div class="checklist-box"><p class="checklist-label">🔎 결과에서 확인할 내용</p>${checklist}</div>` : ''}

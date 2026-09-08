@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="sunFill" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffe9a0"/>
+      <stop offset="100%" stop-color="#ffb23e"/>
+    </radialGradient>
+    <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e7e2ff"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="168" rx="52" ry="9" fill="#000" opacity=".16"/>
+  <ellipse cx="100" cy="102" rx="72" ry="28" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2.2" transform="rotate(-8 100 102)"/>
+  <g>
+    <g fill="#ffcf6b">
+      <path d="M92 34 l6 16 -6 16 -6-16Z"/>
+      <path d="M60 50 l16 6 16-6 -16-6Z" transform="rotate(45 92 92)"/>
+      <path d="M60 50 l16 6 16-6 -16-6Z" transform="rotate(-45 92 92)"/>
+      <path d="M60 50 l16 6 16-6 -16-6Z" transform="rotate(90 92 92)"/>
+    </g>
+    <circle cx="92" cy="92" r="34" fill="url(#sunFill)"/>
+    <path d="M78 88 q5 -4 10 0" fill="none" stroke="#a15c1c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M96 88 q5 -4 10 0" fill="none" stroke="#a15c1c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M80 100 q12 8 24 0" fill="none" stroke="#a15c1c" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="76" cy="98" r="4.5" fill="#ff96a0" opacity=".7"/>
+    <circle cx="108" cy="98" r="4.5" fill="#ff96a0" opacity=".7"/>
+  </g>
+  <g>
+    <path d="M56 120 a18 18 0 0 1 30-13 a16 16 0 0 1 30 6 a15 15 0 0 1 -4 30 h-46 a15 15 0 0 1 -10-23Z" fill="url(#cloudFill)"/>
+    <path d="M70 128 q5 -4 10 0" fill="none" stroke="#8b7fc9" stroke-width="3" stroke-linecap="round"/>
+    <path d="M90 128 q5 -4 10 0" fill="none" stroke="#8b7fc9" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="66" cy="136" r="3.6" fill="#ffb3c2" opacity=".7"/>
+    <circle cx="100" cy="136" r="3.6" fill="#ffb3c2" opacity=".7"/>
+  </g>
+  <g fill="#fff">
+    <path d="M150 46 l2.4 6.4 6.4 2.4 -6.4 2.4 -2.4 6.4 -2.4 -6.4 -6.4 -2.4 6.4 -2.4Z"/>
+    <path d="M44 62 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2Z"/>
+    <circle cx="152" cy="128" r="3" opacity=".8"/>
+  </g>
+</svg>

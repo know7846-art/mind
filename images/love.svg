@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="heartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff9fc0"/>
+      <stop offset="55%" stop-color="#ff5c8a"/>
+      <stop offset="100%" stop-color="#e02463"/>
+    </linearGradient>
+    <linearGradient id="arrowFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd76a"/>
+      <stop offset="100%" stop-color="#f7a53a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="170" rx="52" ry="9" fill="#000" opacity=".16"/>
+  <ellipse cx="100" cy="104" rx="70" ry="26" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2.4" transform="rotate(-12 100 104)"/>
+  <path d="M100 145 C55 112 40 84 58 64 C72 49 92 54 100 72 C108 54 128 49 142 64 C160 84 145 112 100 145Z" fill="url(#heartFill)"/>
+  <path d="M100 145 C55 112 40 84 58 64 C72 49 92 54 100 72" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+  <g transform="rotate(-32 100 104)">
+    <rect x="94" y="46" width="12" height="98" rx="6" fill="url(#arrowFill)"/>
+    <path d="M100 32 L114 58 L86 58Z" fill="#7c63e8"/>
+    <path d="M84 138 L100 156 L100 138Z" fill="#7c63e8"/>
+    <path d="M116 138 L100 156 L100 138Z" fill="#7c63e8"/>
+  </g>
+  <g fill="#ffd7e6">
+    <path d="M42 62 c-6-6-16-2-16 6 0 6 8 12 16 18 8-6 16-12 16-18 0-8-10-12-16-6Z"/>
+    <path d="M158 96 c-4.5-4.5-12-1.5-12 4.5 0 4.5 6 9 12 13.5 6-4.5 12-9 12-13.5 0-6-7.5-9-12-4.5Z"/>
+    <path d="M48 140 c-4.5-4.5-12-1.5-12 4.5 0 4.5 6 9 12 13.5 6-4.5 12-9 12-13.5 0-6-7.5-9-12-4.5Z"/>
+  </g>
+  <g fill="#ffe9a8">
+    <path d="M150 40 l2.6 6.8 6.8 2.6 -6.8 2.6 -2.6 6.8 -2.6 -6.8 -6.8 -2.6 6.8 -2.6Z"/>
+    <path d="M52 100 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2Z"/>
+  </g>
+</svg>

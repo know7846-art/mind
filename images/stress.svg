@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="boltFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe27a"/>
+      <stop offset="55%" stop-color="#ffb23e"/>
+      <stop offset="100%" stop-color="#ff6a3d"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="170" rx="46" ry="9" fill="#000" opacity=".16"/>
+  <ellipse cx="100" cy="106" rx="68" ry="26" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2.4" transform="rotate(-14 100 106)"/>
+  <path d="M112 34 L64 108 L92 108 L82 168 L138 92 L108 92 Z" fill="url(#boltFill)"/>
+  <path d="M112 34 L88 76 L104 76" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <circle cx="92" cy="88" r="4" fill="#5a3410"/>
+    <path d="M104 84 q6 -5 12 0" fill="none" stroke="#5a3410" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M90 100 q8 7 18 0" fill="none" stroke="#5a3410" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="84" cy="98" r="5" fill="#ff96a0" opacity=".7"/>
+    <circle cx="122" cy="94" r="5" fill="#ff96a0" opacity=".6"/>
+  </g>
+  <g fill="#ffe27a">
+    <path d="M46 60 L34 82 L44 82 L38 104 L58 76 L48 76Z" opacity=".9"/>
+    <path d="M162 118 L153 134 L160 134 L155 150 L170 130 L163 130Z" opacity=".85"/>
+  </g>
+  <g fill="#fff">
+    <path d="M150 44 l2.4 6.4 6.4 2.4 -6.4 2.4 -2.4 6.4 -2.4 -6.4 -6.4 -2.4 6.4 -2.4Z"/>
+    <path d="M52 130 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2Z"/>
+  </g>
+</svg>
