@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>마음체크 - 나를 알아가는 3분</title>
+<meta name="description" content="타로, 연애성향, 외로움·스트레스·마음상태 자가검사로 나를 살펴보고, 필요할 때 부천시청소년상담복지센터와 편하게 연결돼요.">
+<link rel="stylesheet" href="css/hub.css">
+</head>
+<body>
+<div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
+
+<div class="wrap">
+  <header class="hub-header">
+    <div class="hub-logo">🌱 마음체크</div>
+    <div class="date-chip" id="dateChip">📅 오늘의 마음카드</div>
+    <h1 class="hub-title">오늘 내 마음은<br>어떤 색일까?</h1>
+    <p class="hub-sub">타로 한 장, 3분 자가검사로 가볍게 시작해보세요.<br>결과 끝에는 부천시청소년상담복지센터로 편하게 연결해드려요.</p>
+  </header>
+
+  <main class="cover-grid">
+    <a class="cover-card cv-tarot" data-hub-link="tarot/index.html" data-test="tarot">
+      <div class="cover-sparkle"></div>
+      <div class="cover-frame"><span class="cover-corner tl">✦</span><span class="cover-corner br">✦</span></div>
+      <span class="cover-badge">3분</span>
+      <div class="cover-icon">🔮</div>
+      <div class="cover-body">
+        <p class="cover-eyebrow">Fortune</p>
+        <p class="cover-title">고민타파 타로</p>
+        <p class="cover-tag">카드 한 장이 건네는 오늘의 힌트</p>
+      </div>
+    </a>
+
+    <a class="cover-card cv-love" data-hub-link="tests/love.html" data-test="love">
+      <div class="cover-sparkle"></div>
+      <div class="cover-frame"><span class="cover-corner tl">♥</span><span class="cover-corner br">♥</span></div>
+      <span class="cover-badge">NEW</span>
+      <div class="cover-icon">💘</div>
+      <div class="cover-body">
+        <p class="cover-eyebrow">Love DNA</p>
+        <p class="cover-title">나의 연애 스타일은?</p>
+        <p class="cover-tag">관계 속 진짜 내 모습 알아보기</p>
+      </div>
+    </a>
+
+    <a class="cover-card cv-loneliness" data-hub-link="tests/loneliness.html" data-test="loneliness">
+      <div class="cover-sparkle"></div>
+      <div class="cover-frame"><span class="cover-corner tl">✧</span><span class="cover-corner br">✧</span></div>
+      <span class="cover-badge">1분</span>
+      <div class="cover-icon">🫧</div>
+      <div class="cover-body">
+        <p class="cover-eyebrow">Connection</p>
+        <p class="cover-title">나 지금 외로운 거 맞아?</p>
+        <p class="cover-tag">내 연결감 지수 확인하기</p>
+      </div>
+    </a>
+
+    <a class="cover-card cv-stress" data-hub-link="tests/stress.html" data-test="stress">
+      <div class="cover-sparkle"></div>
+      <div class="cover-frame"><span class="cover-corner tl">✧</span><span class="cover-corner br">✧</span></div>
+      <span class="cover-badge">1분</span>
+      <div class="cover-icon">⚡</div>
+      <div class="cover-body">
+        <p class="cover-eyebrow">Pressure</p>
+        <p class="cover-title">스트레스 게이지는 몇 %?</p>
+        <p class="cover-tag">요즘 나를 짓누르는 압박감 체크</p>
+      </div>
+    </a>
+
+    <a class="cover-card cv-mood" data-hub-link="tests/mood.html" data-test="mood">
+      <div class="cover-sparkle"></div>
+      <div class="cover-frame"><span class="cover-corner tl">✧</span><span class="cover-corner br">✧</span></div>
+      <span class="cover-badge">1분</span>
+      <div class="cover-icon">🌤️</div>
+      <div class="cover-body">
+        <p class="cover-eyebrow">Mind Weather</p>
+        <p class="cover-title">오늘 내 마음 날씨는?</p>
+        <p class="cover-tag">최근 2주, 마음 일기예보</p>
+      </div>
+    </a>
+  </main>
+
+  <p class="disclaimer">
+    모든 검사는 의학적 진단이 아닌 간이 자가 점검·재미 콘텐츠입니다.<br>
+    더 깊은 이야기가 필요할 땐 언제든 <b>부천시청소년상담복지센터</b>(032-325-3002) 또는 <b>청소년전화 1388</b>로 연락해주세요.
+  </p>
+</div>
+
+<script src="js/hub-core.js?v=2"></script>
+<script>
+  Hub.log('visit', null, 'hub_home');
+  document.querySelectorAll('.cover-card').forEach(card => {
+    card.addEventListener('click', () => Hub.log('card_click', card.getAttribute('data-test')));
+  });
+  try {
+    const today = new Date();
+    const fmt = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' }).format(today);
+    document.getElementById('dateChip').textContent = `📅 ${fmt}의 마음카드`;
+  } catch (e) {}
+</script>
+</body>
+</html>

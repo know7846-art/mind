@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔮 고민타파 타로 | 부천시청소년상담복지센터</title>
+  <meta name="description" content="78장의 타로카드로 청소년의 고민을 해결해 드려요! 부천시청소년상담복지센터 타로 상담 프로그램" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- 배경 캔버스 & 오버레이 -->
+<canvas id="star-canvas"></canvas>
+<div class="bg-overlay"></div>
+
+<!-- =============================================
+     ① 인트로 섹션
+============================================= -->
+<section id="intro-section" class="page-section">
+  <div class="logo-wrap">
+    <span class="logo-crystal">🔮</span>
+    <h1 class="main-title">고민타파 타로</h1>
+    <p class="subtitle">✦ 별빛이 전하는 나만의 해결책 ✦</p>
+  </div>
+
+  <div class="intro-card">
+    <div class="intro-badge">✨ 부천시청소년상담복지센터 청소년 타로 프로그램</div>
+
+    <p class="intro-desc">
+      지금 마음속에 <strong>풀리지 않는 고민</strong>이 있나요?<br />
+      학교 생활, 친구 관계, 진로, 감정… 어떤 고민이든 괜찮아요.<br /><br />
+      78장의 신비로운 타로카드가 우주의 에너지를 담아<br />
+      <strong>오직 당신만을 위한 메시지</strong>를 전해 드릴게요. 💫
+    </p>
+
+    <div class="intro-features">
+      <span class="feature-chip">🃏 78장 타로카드</span>
+      <span class="feature-chip">🎴 3카드 스프레드</span>
+      <span class="feature-chip">💬 청소년 맞춤 해석</span>
+      <span class="feature-chip">💜 무료 운영</span>
+    </div>
+
+    <button id="btn-start" class="btn-magic btn-gold">
+      🔮 고민타파 타로 보기
+    </button>
+  </div>
+</section>
+
+
+<!-- =============================================
+     ② 고민 입력 섹션
+============================================= -->
+<section id="worry-section" class="page-section hidden">
+  <div class="worry-wrap">
+    <!-- 로고 작게 -->
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <span style="font-size:3rem;">🌙</span>
+      <h2 class="section-title" style="margin-top:.5rem;">지금 어떤 고민이 있나요?</h2>
+      <p class="section-desc">
+        솔직하게 털어놓아봐요. 여기서는 모든 고민이 소중하게 다뤄져요.<br />
+        타로카드가 당신의 이야기를 듣고 답해드릴 거예요. ✨
+      </p>
+    </div>
+
+    <!-- 진행 별 -->
+    <div class="progress-stars">
+      <span class="progress-star active">⭐</span>
+      <span class="progress-star">⭐</span>
+      <span class="progress-star">⭐</span>
+    </div>
+    <p style="text-align:center; font-size:.8rem; color:var(--text-dim); margin-bottom:2rem;">STEP 1 / 3 — 고민 입력</p>
+
+    <!-- 입력창 -->
+    <div class="worry-input-box">
+      <label class="worry-label" for="worry-input">✦ 나의 고민 ✦</label>
+      <textarea
+        id="worry-input"
+        placeholder="예) 친구랑 사이가 멀어진 것 같아서 걱정돼요…&#10;공부가 잘 안 돼서 스트레스예요…&#10;내가 뭘 좋아하는지 모르겠어요…"
+        maxlength="200"
+      ></textarea>
+      <div class="char-count" id="char-count">0 / 200자</div>
+    </div>
+
+    <!-- 고민 주제 분석 태그 -->
+    <div id="worry-topic-tag" class="worry-topic-tag hidden"></div>
+
+    <div style="text-align:center;">
+      <button id="btn-go-draw" class="btn-magic" style="margin-bottom:1rem;">
+        ✨ 카드 뽑으러 가기
+      </button>
+      <br />
+      <button id="btn-back-intro" class="btn-outline btn-sm" onclick="document.getElementById('btn-start').click(); document.getElementById('worry-section').classList.add('hidden'); document.getElementById('intro-section').classList.remove('hidden');">
+        ← 처음으로
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- =============================================
+     ③ 카드 뽑기 섹션
+============================================= -->
+<section id="draw-section" class="page-section hidden">
+  <div class="draw-wrap">
+
+    <!-- 헤더 -->
+    <div style="text-align:center; margin-bottom:1rem;">
+      <span style="font-size:2.5rem;">⭐</span>
+      <h2 class="section-title" style="margin-top:.4rem;">카드를 3장 선택하세요</h2>
+      <p class="draw-instruction" id="draw-instruction-text">
+        눈을 살짝 감고 고민을 떠올려봐요.<br />
+        마음이 끌리는 카드를 <strong style="color:var(--gold);">직접 골라서</strong> 클릭하세요! 🌙
+      </p>
+    </div>
+
+    <!-- 진행 별 -->
+    <div class="progress-stars">
+      <span class="progress-star active">⭐</span>
+      <span class="progress-star active">⭐</span>
+      <span class="progress-star">⭐</span>
+    </div>
+    <p style="text-align:center; font-size:.8rem; color:var(--text-dim); margin-bottom:1.5rem;">STEP 2 / 3 — 카드 선택</p>
+
+    <!-- 진행 카운트 -->
+    <p class="draw-progress">
+      <span id="draw-count">0</span> / 3 장 선택됨 &nbsp;|&nbsp; 남은 카드: <span id="remaining-count">78</span>장
+    </p>
+
+    <!-- 선택된 슬롯 -->
+    <div class="selected-slots">
+      <div class="card-slot">
+        <div class="slot-label"><span class="slot-pos-emoji">🌙</span>과거의 영향</div>
+        <div class="slot-frame" id="slot-0"><span class="slot-empty-icon">✦</span></div>
+      </div>
+      <div class="card-slot">
+        <div class="slot-label"><span class="slot-pos-emoji">⭐</span>현재의 핵심</div>
+        <div class="slot-frame" id="slot-1"><span class="slot-empty-icon">✦</span></div>
+      </div>
+      <div class="card-slot">
+        <div class="slot-label"><span class="slot-pos-emoji">☀️</span>앞으로의 방향</div>
+        <div class="slot-frame" id="slot-2"><span class="slot-empty-icon">✦</span></div>
+      </div>
+    </div>
+
+    <!-- ★ 부채형 카드 펼침 영역 ★ -->
+    <div class="fan-deck-wrap">
+      <div id="fan-deck" class="fan-deck">
+        <!-- JS로 카드 생성 -->
+      </div>
+      <p class="fan-hint" id="fan-hint">✨ 원하는 카드 위에 마우스를 올리고 클릭하세요</p>
+    </div>
+
+    <!-- 결과 보기 버튼 -->
+    <div style="text-align:center; margin-top:1rem;">
+      <button id="btn-see-result" class="btn-magic btn-gold hidden">
+        🌟 결과 보기
+      </button>
+    </div>
+
+    <div style="text-align:center; margin-top:1.2rem;">
+      <button id="btn-back-worry" class="btn-outline btn-sm">
+        ← 고민 다시 입력하기
+      </button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =============================================
+     ④ 로딩 섹션
+============================================= -->
+<section id="loading-section" class="page-section hidden">
+  <span class="loading-crystal">🔮</span>
+  <p class="loading-text" id="loading-msg">✨ 별자리가 정렬되고 있어요...</p>
+  <div class="loading-dots">
+    <span></span><span></span><span></span>
+  </div>
+</section>
+
+
+<!-- =============================================
+     ⑤ 결과 섹션
+============================================= -->
+<section id="result-section" class="page-section hidden">
+  <div class="result-wrap">
+
+    <!-- 결과 헤더 -->
+    <div class="result-header">
+      <div style="font-size:3rem; margin-bottom:.8rem;">✨</div>
+      <h2 class="result-title">타로카드가 전하는 메시지</h2>
+      <div class="result-worry-bubble">
+        💬 고민: <strong id="result-worry-text"></strong>
+      </div>
+      <div style="margin-top:.8rem;">
+        <span id="result-topic-tag" class="result-topic-tag hidden"></span>
+      </div>
+    </div>
+
+    <!-- 진행 별 -->
+    <div class="progress-stars" style="margin-bottom:2rem;">
+      <span class="progress-star active">⭐</span>
+      <span class="progress-star active">⭐</span>
+      <span class="progress-star active">⭐</span>
+    </div>
+
+    <!-- 카드 3장 결과 -->
+    <div id="result-cards-grid" class="result-cards-grid"></div>
+
+    <!-- 종합 해석 -->
+    <div class="result-total-wrap">
+      <h3 class="total-title">🔮 카드가 전하는 종합 조언</h3>
+      <ul id="advice-list" class="advice-list"></ul>
+    </div>
+
+    <!-- 구분선 -->
+    <div class="mystic-divider">✦ 고민이 아직 남아 있다면 ✦</div>
+
+    <!-- 상담 안내 배너 -->
+    <div class="consult-banner">
+      <span class="consult-heart">💜</span>
+      <h3 class="consult-title" id="consult-title-text">타로카드로도 해결되지 않는 고민이 있나요?</h3>
+      <p class="consult-desc" id="consult-desc-text">
+        깊은 고민이나 혼자 해결하기 어려운 문제는<br />
+        전문 상담사 선생님과 직접 이야기해 보세요.<br />
+        당신의 이야기를 경청하고, 함께 해결책을 찾아드릴게요. 🌟
+      </p>
+
+      <div style="margin-bottom:1rem;">
+        <div class="consult-phone-wrap">
+          <span style="font-size:1.6rem;">📞</span>
+          <div>
+            <div class="consult-phone">032-325-3002</div>
+            <div class="consult-center-name">부천시청소년상담복지센터</div>
+          </div>
+        </div>
+        <p class="consult-note">
+          📍 부천시청소년상담복지센터 | 상담 신청은 언제든지 환영해요!<br />
+          전화 한 통이 큰 변화의 시작이 될 수 있어요. 💙
+        </p>
+      </div>
+
+      <a href="tel:032-325-3002" class="btn-magic btn-gold btn-sm" style="text-decoration:none; display:inline-block;">
+        📞 지금 바로 전화하기
+      </a>
+    </div>
+
+    <!-- 결과 액션 버튼 -->
+    <div class="result-actions">
+      <button id="btn-new-draw" class="btn-magic btn-sm">
+        🎴 카드 다시 뽑기
+      </button>
+      <button id="btn-retry" class="btn-outline btn-sm">
+        🔮 처음부터 다시
+      </button>
+    </div>
+
+    <!-- 하단 푸터 -->
+    <div style="text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(168,85,247,.2);">
+      <p style="font-size:.8rem; color:var(--text-dim); line-height:1.8;">
+        🔮 고민타파 타로 | 부천시청소년상담복지센터 청소년 상담 프로그램<br />
+        타로카드 해석은 참고용이며, 전문 심리 상담을 대체하지 않습니다.<br />
+        <strong style="color:var(--gold);">더 깊은 도움이 필요하다면 전문 상담사와 상담하세요.</strong>
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===== JS ===== -->
+<script src="js/tarot-data.js"></script>
+<script src="js/main.js"></script>
+<script src="../js/hub-core.js?v=2"></script>
+<script>
+  Hub.log('test_start', 'tarot');
+  document.getElementById('btn-see-result')?.addEventListener('click', () => Hub.log('test_complete', 'tarot'));
+  document.querySelectorAll('a[href^="tel:"]').forEach(a => a.addEventListener('click', () => Hub.log('cta_click', 'tarot', 'phone')));
+</script>
+</body>
+</html>

@@ -1,0 +1,703 @@
+/* ===== Google Fonts ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --deep-purple: #0d0520;
+  --dark-purple: #1a0533;
+  --mid-purple: #2d1054;
+  --accent-purple: #7c3aed;
+  --bright-purple: #a855f7;
+  --gold: #f4c430;
+  --gold-light: #fde68a;
+  --gold-dim: #b8860b;
+  --silver: #c8c8ff;
+  --cyan: #67e8f9;
+  --pink: #f472b6;
+  --white: #f8f4ff;
+  --text-dim: #c4b5fd;
+  --card-bg: rgba(30,10,60,0.85);
+  --glass: rgba(120,60,200,0.12);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: var(--deep-purple);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== 캔버스 배경 ===== */
+#star-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+
+.bg-overlay {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(124,58,237,.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(168,85,247,.10) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ===== 공통 레이아웃 ===== */
+.page-section {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.hidden { display: none !important; }
+
+/* ===== 로고 ===== */
+.logo-wrap { text-align: center; margin-bottom: 2rem; animation: floatAnim 4s ease-in-out infinite; }
+
+.logo-crystal {
+  font-size: 5rem;
+  animation: crystalGlow 3s ease-in-out infinite alternate;
+  display: block;
+}
+
+@keyframes crystalGlow {
+  0%   { filter: drop-shadow(0 0 10px rgba(244,196,48,.6)); transform: scale(1); }
+  100% { filter: drop-shadow(0 0 30px rgba(244,196,48,1)); transform: scale(1.05); }
+}
+
+@keyframes floatAnim {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+.main-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(2rem,5vw,3.5rem);
+  font-weight: 900;
+  background: linear-gradient(135deg,var(--gold),var(--gold-light),var(--bright-purple),var(--gold));
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerText 3s linear infinite;
+  letter-spacing: .05em; line-height: 1.2;
+}
+
+@keyframes shimmerText {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.subtitle {
+  font-size: clamp(.95rem,2.5vw,1.2rem);
+  color: var(--silver); margin-top: .5rem;
+  letter-spacing: .1em; opacity: .9;
+}
+
+/* ===== 인트로 카드 ===== */
+#intro-section { text-align: center; }
+
+.intro-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(168,85,247,.3);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  max-width: 680px; width: 100%;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 40px rgba(124,58,237,.3), 0 0 80px rgba(124,58,237,.1), inset 0 1px 0 rgba(255,255,255,.1);
+  position: relative; overflow: hidden;
+}
+
+.intro-card::before {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine { 0% { left:-100%; } 100% { left:100%; } }
+
+.intro-badge {
+  display: inline-block;
+  background: linear-gradient(135deg,rgba(244,196,48,.2),rgba(168,85,247,.2));
+  border: 1px solid rgba(244,196,48,.4);
+  color: var(--gold-light);
+  font-size: .8rem; letter-spacing: .15em;
+  padding: .4rem 1.2rem; border-radius: 50px; margin-bottom: 1.5rem;
+}
+
+.intro-desc {
+  font-size: clamp(.95rem,2vw,1.1rem);
+  line-height: 1.9; color: var(--text-dim); margin-bottom: 2rem;
+}
+.intro-desc strong { color: var(--gold-light); font-weight: 700; }
+
+.intro-features {
+  display: flex; gap: 1rem;
+  justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;
+}
+
+.feature-chip {
+  background: rgba(124,58,237,.2);
+  border: 1px solid rgba(168,85,247,.3);
+  border-radius: 50px; padding: .5rem 1rem;
+  font-size: .85rem; color: var(--silver);
+  display: flex; align-items: center; gap: .4rem;
+}
+
+/* ===== 버튼 ===== */
+.btn-magic {
+  position: relative;
+  background: linear-gradient(135deg,#7c3aed,#a855f7,#c084fc);
+  border: none; border-radius: 16px;
+  padding: 1.1rem 3rem;
+  font-size: 1.1rem; font-weight: 700; color: white;
+  cursor: pointer; letter-spacing: .05em;
+  overflow: hidden; transition: all .3s ease;
+  box-shadow: 0 0 30px rgba(168,85,247,.5);
+}
+
+.btn-magic::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: rgba(255,255,255,.2); border-radius: 50%;
+  transform: translate(-50%,-50%);
+  transition: width .6s, height .6s, opacity .6s;
+}
+
+.btn-magic:hover::before { width: 300px; height: 300px; opacity: 0; }
+.btn-magic:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 50px rgba(168,85,247,.8), 0 8px 30px rgba(0,0,0,.4); }
+.btn-magic:active { transform: scale(.98); }
+
+.btn-gold {
+  background: linear-gradient(135deg,#b8860b,#f4c430,#fde68a,#f4c430);
+  background-size: 200% auto; color: #2d1054;
+  box-shadow: 0 0 30px rgba(244,196,48,.5);
+  animation: goldShimmer 2s linear infinite;
+}
+
+@keyframes goldShimmer { 0% { background-position:0% center; } 100% { background-position:200% center; } }
+.btn-gold:hover { box-shadow: 0 0 50px rgba(244,196,48,.9), 0 8px 30px rgba(0,0,0,.4); }
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid rgba(168,85,247,.5);
+  color: var(--bright-purple);
+  box-shadow: none; font-size: .95rem; padding: .8rem 2rem;
+}
+
+.btn-outline:hover {
+  border-color: var(--bright-purple);
+  background: rgba(168,85,247,.1);
+  box-shadow: 0 0 20px rgba(168,85,247,.3);
+  transform: translateY(-2px);
+}
+
+.btn-sm { padding: .7rem 1.8rem; font-size: .95rem; border-radius: 12px; }
+
+/* ===== 고민 입력 ===== */
+#worry-section { text-align: center; }
+
+.worry-wrap { max-width: 650px; width: 100%; }
+
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(1.5rem,4vw,2.2rem);
+  font-weight: 900; color: var(--gold-light); margin-bottom: .8rem;
+}
+
+.section-desc { font-size: 1rem; color: var(--text-dim); margin-bottom: 2rem; line-height: 1.7; }
+
+.worry-input-box {
+  background: rgba(20,8,50,.7);
+  border: 2px solid rgba(168,85,247,.3);
+  border-radius: 20px; padding: 1.5rem; margin-bottom: 2rem;
+  transition: all .3s;
+  box-shadow: 0 0 20px rgba(124,58,237,.15);
+}
+
+.worry-input-box:focus-within {
+  border-color: rgba(244,196,48,.6);
+  box-shadow: 0 0 30px rgba(244,196,48,.2);
+}
+
+.worry-label {
+  display: block; font-size: .85rem; color: var(--gold);
+  letter-spacing: .12em; margin-bottom: .8rem; text-align: left;
+}
+
+#worry-input {
+  width: 100%; background: transparent; border: none; outline: none;
+  color: var(--white); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem; line-height: 1.8; resize: vertical; min-height: 120px;
+}
+
+#worry-input::placeholder { color: rgba(196,181,253,.4); }
+
+.char-count { text-align: right; font-size: .78rem; color: var(--text-dim); margin-top: .5rem; }
+
+/* ===== 카드 뽑기 ===== */
+#draw-section { text-align: center; }
+
+.draw-wrap { max-width: 940px; width: 100%; }
+
+.draw-instruction { font-size: 1.05rem; color: var(--silver); margin-bottom: 1rem; line-height: 1.8; }
+
+@keyframes fadeInOut { 0%,100% { opacity:.3; } 50% { opacity:1; } }
+
+/* ===== 부채형 카드 덱 ===== */
+.fan-deck-wrap {
+  position: relative;
+  width: 100%;
+  overflow: visible; /* 호버 시 카드가 잘리지 않도록 */
+  margin-bottom: 1.5rem;
+  padding-top: 40px; /* 호버 시 위로 올라오는 카드 공간 확보 */
+}
+
+.fan-deck {
+  position: relative;
+  margin: 0 auto;
+  /* 높이와 너비는 JS에서 동적 설정 */
+}
+
+/* 개별 카드 (JS가 생성) */
+.fan-card {
+  position: absolute;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #2d1054, #1a0533);
+  border: 1.5px solid rgba(168,85,247,.45);
+  box-shadow: 0 4px 14px rgba(0,0,0,.5);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transform-origin: 50% 110%;   /* 부채 중심점: 카드 아래 */
+  transition: transform .25s cubic-bezier(.4,0,.2,1), box-shadow .25s ease, border-color .25s ease, filter .25s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.fan-card .fan-card-inner {
+  width: 84%; height: 84%;
+  border: 1px solid rgba(168,85,247,.25);
+  border-radius: 7px;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 6px,
+    rgba(124,58,237,.1) 6px, rgba(124,58,237,.1) 12px
+  );
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  pointer-events: none;
+}
+
+/* 호버: 위로 올라오며 글로우 */
+.fan-card:hover:not(.selected):not(.disabled) {
+  transform: var(--base-transform) translateY(-35px) scale(1.18) !important;
+  box-shadow: 0 0 28px rgba(244,196,48,.8), 0 16px 36px rgba(0,0,0,.6);
+  border-color: var(--gold);
+  z-index: 200 !important;
+  filter: brightness(1.35);
+}
+
+/* 터치 디바이스 호버 대체 */
+@media (hover: none) {
+  .fan-card:active:not(.selected):not(.disabled) {
+    transform: var(--base-transform) translateY(-30px) scale(1.15) !important;
+    box-shadow: 0 0 24px rgba(244,196,48,.7), 0 14px 30px rgba(0,0,0,.5);
+    border-color: var(--gold);
+    z-index: 200 !important;
+    filter: brightness(1.3);
+  }
+}
+
+/* 선택된 카드 */
+.fan-card.selected {
+  border-color: rgba(244,196,48,.8);
+  box-shadow: 0 0 22px rgba(244,196,48,.6);
+  filter: brightness(1.2) saturate(1.3);
+  cursor: default;
+  transform: var(--base-transform) translateY(-20px) scale(1.08) !important;
+  z-index: 150 !important;
+}
+
+/* 비활성 카드 (3장 다 뽑은 후) */
+.fan-card.disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  filter: grayscale(.6) brightness(.7);
+  pointer-events: none;
+}
+
+.fan-hint {
+  text-align: center;
+  font-size: .85rem;
+  color: var(--gold);
+  letter-spacing: .08em;
+  margin-top: 1rem;
+  animation: fadeInOut 2s ease-in-out infinite;
+  font-weight: 500;
+}
+
+/* 카드 등장 애니메이션 */
+@keyframes fanCardAppear {
+  0%   { opacity: 0; transform: var(--base-transform) scale(0.5) translateY(40px); }
+  100% { opacity: 1; transform: var(--base-transform) scale(1) translateY(0); }
+}
+
+/* 선택 슬롯 */
+.selected-slots {
+  display: flex; gap: 1.5rem;
+  justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;
+}
+
+.card-slot { width: 130px; text-align: center; }
+
+.slot-label { font-size: .72rem; color: var(--gold); letter-spacing: .08em; margin-bottom: .5rem; }
+.slot-pos-emoji { font-size: 1rem; display: block; margin-bottom: .2rem; }
+
+.slot-frame {
+  width: 130px; height: 195px; border-radius: 14px;
+  border: 2px dashed rgba(168,85,247,.3);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,8,50,.5);
+  position: relative; overflow: hidden; transition: all .5s;
+}
+
+.slot-frame.filled {
+  border-style: solid; border-color: rgba(244,196,48,.5);
+  background: linear-gradient(145deg,#2d1054,#1a0533);
+  box-shadow: 0 0 20px rgba(244,196,48,.25);
+  animation: cardAppear .5s ease;
+}
+
+@keyframes cardAppear {
+  0%   { transform: scale(0) rotateY(180deg); opacity: 0; }
+  100% { transform: scale(1) rotateY(0deg);   opacity: 1; }
+}
+
+.slot-empty-icon { font-size: 2rem; opacity: .25; }
+
+.mini-card-content {
+  padding: .8rem .5rem; text-align: center;
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.mini-card-emoji { font-size: 2rem; margin-bottom: .4rem; }
+.mini-card-name { font-size: .73rem; font-weight: 700; color: var(--gold-light); line-height: 1.3; }
+.mini-card-suit { font-size: .62rem; color: var(--text-dim); margin-top: .2rem; }
+
+.draw-progress { font-size: .9rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+.draw-progress span { color: var(--gold); font-weight: 700; font-size: 1.1rem; }
+
+/* ===== 로딩 ===== */
+#loading-section { text-align: center; }
+
+.loading-crystal {
+  font-size: 5rem;
+  animation: crystalSpin 1.5s linear infinite;
+  display: block; margin-bottom: 1.5rem;
+}
+
+@keyframes crystalSpin {
+  0%   { transform: rotate(0deg)   scale(1);   filter: hue-rotate(0deg); }
+  50%  { transform: rotate(180deg) scale(1.1); filter: hue-rotate(90deg); }
+  100% { transform: rotate(360deg) scale(1);   filter: hue-rotate(0deg); }
+}
+
+.loading-text { font-size: 1.1rem; color: var(--silver); }
+
+.loading-dots { display: inline-flex; gap: .4rem; margin-top: 1rem; }
+.loading-dots span {
+  width: 10px; height: 10px;
+  background: var(--bright-purple); border-radius: 50%;
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: .2s; }
+.loading-dots span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes dotBounce {
+  0%,100% { transform: translateY(0);    opacity: .4; }
+  50%      { transform: translateY(-12px); opacity: 1; }
+}
+
+/* ===== 결과 섹션 ===== */
+#result-section { padding: 3rem 1.5rem; align-items: center; justify-content: flex-start; padding-top: 4rem; }
+
+.result-wrap { max-width: 900px; width: 100%; margin: 0 auto; }
+
+.result-header { text-align: center; margin-bottom: 3rem; }
+
+.result-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(1.6rem,4vw,2.5rem);
+  font-weight: 900; color: var(--gold-light); margin-bottom: 1rem;
+}
+
+.result-worry-bubble {
+  background: rgba(124,58,237,.15);
+  border: 1px solid rgba(168,85,247,.3);
+  border-radius: 16px; padding: .8rem 1.5rem;
+  font-size: .95rem; color: var(--text-dim);
+  display: inline-block; max-width: 100%;
+}
+.result-worry-bubble strong { color: var(--silver); }
+
+/* 고민 주제 태그 (입력 화면) */
+.worry-topic-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(168,85,247,.2), rgba(244,196,48,.15));
+  border: 1px solid rgba(244,196,48,.4);
+  color: var(--gold-light);
+  font-size: .82rem; font-weight: 600;
+  letter-spacing: .06em;
+  padding: .4rem 1.1rem; border-radius: 50px;
+  margin-bottom: 1.2rem;
+  animation: fadeInPop .4s ease;
+}
+
+/* 결과 주제 태그 */
+.result-topic-tag {
+  display: inline-block;
+  background: rgba(168,85,247,.18);
+  border: 1px solid rgba(168,85,247,.4);
+  color: var(--silver);
+  font-size: .8rem; font-weight: 600;
+  padding: .3rem 1rem; border-radius: 50px;
+}
+
+@keyframes fadeInPop {
+  0%   { opacity:0; transform: scale(.8); }
+  100% { opacity:1; transform: scale(1); }
+}
+
+/* 마음이 응원 메시지 강조 */
+.advice-maeum .maeum-msg {
+  line-height: 2;
+  font-size: .97rem;
+  color: var(--white);
+  background: linear-gradient(135deg, rgba(244,114,182,.08), rgba(168,85,247,.08));
+  border-radius: 12px;
+  padding: .8rem 1rem;
+  margin-top: .4rem;
+}
+
+/* 카드 3장 그리드 */
+.result-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; margin-bottom: 3rem;
+}
+
+@media (max-width: 700px) {
+  .result-cards-grid {
+    grid-template-columns: 1fr;
+    max-width: 360px; margin: 0 auto 3rem;
+  }
+}
+
+.result-card-item { animation: cardReveal .7s ease both; }
+.result-card-item:nth-child(2) { animation-delay: .3s; }
+.result-card-item:nth-child(3) { animation-delay: .6s; }
+
+@keyframes cardReveal {
+  0%   { opacity: 0; transform: translateY(30px) scale(.9); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.result-position-label { text-align: center; margin-bottom: .8rem; }
+.position-emoji { font-size: 1.4rem; display: block; margin-bottom: .3rem; }
+.position-name { font-size: .8rem; color: var(--gold); letter-spacing: .08em; font-weight: 600; }
+.position-desc { font-size: .7rem; color: var(--text-dim); margin-top: .2rem; }
+
+.result-tarot-card {
+  background: linear-gradient(145deg,rgba(45,16,84,.9),rgba(26,5,51,.9));
+  border: 1px solid rgba(244,196,48,.3);
+  border-radius: 20px; padding: 1.5rem 1.2rem; text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,.4), 0 0 20px rgba(244,196,48,.1);
+  position: relative; overflow: hidden;
+  transition: transform .3s;
+}
+
+.result-tarot-card:hover { transform: translateY(-5px); }
+
+.result-tarot-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.card-suit-badge {
+  display: inline-block; font-size: .7rem;
+  padding: .2rem .8rem; border-radius: 50px;
+  margin-bottom: .8rem; font-weight: 600; letter-spacing: .05em;
+}
+
+.badge-major   { background: rgba(155,89,182,.25); color: #d7aefb; border: 1px solid rgba(155,89,182,.4); }
+.badge-cups    { background: rgba(52,152,219,.25); color: #93c5fd; border: 1px solid rgba(52,152,219,.4); }
+.badge-wands   { background: rgba(231,76,60,.25);  color: #fca5a5; border: 1px solid rgba(231,76,60,.4); }
+.badge-swords  { background: rgba(149,165,166,.25); color: #d1d5db; border: 1px solid rgba(149,165,166,.4); }
+.badge-pentacles { background: rgba(39,174,96,.25); color: #86efac; border: 1px solid rgba(39,174,96,.4); }
+
+.card-emoji-big {
+  font-size: 3.2rem; display: block; margin-bottom: .8rem;
+  animation: floatAnim 3s ease-in-out infinite;
+}
+
+.card-name-kr { font-family: 'Noto Serif KR', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold-light); margin-bottom: .2rem; }
+.card-name-en { font-size: .72rem; color: var(--text-dim); margin-bottom: .8rem; }
+
+.card-keywords { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center; margin-bottom: .8rem; }
+.keyword-tag {
+  background: rgba(124,58,237,.25); border: 1px solid rgba(168,85,247,.3);
+  border-radius: 50px; padding: .2rem .6rem; font-size: .68rem; color: var(--silver);
+}
+
+.card-short-msg { font-size: .82rem; color: var(--cyan); font-weight: 600; line-height: 1.4; }
+
+/* 종합 해석 */
+.result-total-wrap {
+  background: var(--card-bg);
+  border: 1px solid rgba(244,196,48,.2);
+  border-radius: 24px; padding: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 0 50px rgba(124,58,237,.2);
+  position: relative; overflow: hidden;
+}
+
+.result-total-wrap::after {
+  content: '🔮';
+  position: absolute; right: -10px; bottom: -20px;
+  font-size: 8rem; opacity: .04; pointer-events: none;
+}
+
+.total-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 1.3rem; font-weight: 700;
+  color: var(--gold-light); margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: .6rem;
+}
+
+.advice-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
+
+.advice-item {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: 1.2rem; border-radius: 16px;
+  background: rgba(124,58,237,.1);
+  border-left: 3px solid var(--bright-purple);
+  animation: cardReveal .7s ease both;
+}
+
+.advice-item:nth-child(1) { animation-delay: .8s;  border-left-color: var(--bright-purple); }
+.advice-item:nth-child(2) { animation-delay: 1.1s; border-left-color: var(--gold); }
+.advice-item:nth-child(3) { animation-delay: 1.4s; border-left-color: var(--cyan); }
+
+.advice-pos-emoji { font-size: 1.5rem; flex-shrink: 0; margin-top: .1rem; }
+.advice-card-ref { font-size: .8rem; color: var(--gold); font-weight: 600; margin-bottom: .5rem; }
+.advice-text { font-size: .95rem; line-height: 1.9; color: var(--silver); }
+
+/* ===== 상담 배너 ===== */
+.consult-banner {
+  background: linear-gradient(135deg,rgba(20,8,50,.9),rgba(45,16,84,.7));
+  border: 1px solid rgba(244,196,48,.3);
+  border-radius: 24px; padding: 2.5rem;
+  text-align: center; position: relative; overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 40px rgba(244,196,48,.1);
+}
+
+.consult-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(244,196,48,.05) 0%, transparent 70%);
+}
+
+.consult-heart {
+  font-size: 3rem; display: block; margin-bottom: 1rem;
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+
+.consult-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 1.3rem; font-weight: 700;
+  color: var(--gold-light); margin-bottom: 1rem;
+}
+
+.consult-desc { font-size: .95rem; color: var(--text-dim); line-height: 1.8; margin-bottom: 1.5rem; }
+
+.consult-phone-wrap {
+  display: inline-flex; align-items: center; gap: 1rem;
+  background: rgba(244,196,48,.1);
+  border: 1px solid rgba(244,196,48,.4);
+  border-radius: 16px; padding: 1rem 2rem;
+  margin-bottom: 1.2rem; flex-wrap: wrap; justify-content: center;
+}
+
+.consult-phone {
+  font-size: 1.6rem; font-weight: 900; color: var(--gold);
+  letter-spacing: .05em; font-family: 'Noto Serif KR', serif;
+}
+
+.consult-center-name { font-size: .85rem; color: var(--silver); }
+.consult-note { font-size: .8rem; color: var(--text-dim); }
+
+/* ===== 결과 액션 ===== */
+.result-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+
+/* ===== 구분선 ===== */
+.mystic-divider {
+  display: flex; align-items: center; gap: 1rem; margin: 2rem 0; color: var(--text-dim);
+}
+.mystic-divider::before,.mystic-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg,transparent,rgba(168,85,247,.4),transparent);
+}
+
+/* ===== 진행 별 ===== */
+.progress-stars { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
+.progress-star { font-size: 1.2rem; opacity: .2; transition: all .3s; }
+.progress-star.active { opacity: 1; animation: starPop .4s ease; }
+@keyframes starPop { 0% { transform:scale(0); } 70% { transform:scale(1.3); } 100% { transform:scale(1); } }
+
+/* ===== 스크롤바 ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--deep-purple); }
+::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 3px; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .intro-card { padding: 2rem 1.2rem; }
+  .result-total-wrap { padding: 1.5rem 1.2rem; }
+  .consult-banner { padding: 1.5rem 1.2rem; }
+  .btn-magic { padding: .9rem 2rem; font-size: 1rem; }
+  .selected-slots { gap: .6rem; }
+  .slot-frame { width: 95px; height: 148px; border-radius: 10px; }
+  .card-slot { width: 95px; }
+  .slot-label { font-size: .65rem; }
+  .mini-card-emoji { font-size: 1.5rem; }
+  .mini-card-name { font-size: .65rem; }
+  .fan-deck-wrap { padding-top: 30px; }
+  .fan-card .fan-card-inner { font-size: 1rem; }
+  .draw-wrap { padding: 0 0.2rem; }
+  .page-section { padding: 1.5rem 1rem; }
+}
+
+/* 태블릿 대응 */
+@media (min-width: 601px) and (max-width: 1023px) {
+  .fan-deck-wrap { padding-top: 35px; }
+  .slot-frame { width: 115px; height: 178px; }
+  .card-slot { width: 115px; }
+}
+
+/* draw-section 오버플로우 보정 */
+#draw-section { overflow: visible; }
+.draw-wrap { overflow: visible; }

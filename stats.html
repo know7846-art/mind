@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마음체크 - 유입 통계</title>
+<link rel="stylesheet" href="css/hub.css">
+<style>
+  .wrap { max-width: 960px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  th, td { padding: 10px 12px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border); }
+  th { background: var(--primary-light); color: var(--primary-dark); }
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stat-card { background: #fff; border-radius: 14px; padding: 16px; text-align: center; box-shadow: var(--shadow-sm); }
+  .stat-num { font-size: 26px; font-weight: 800; color: var(--primary-dark); }
+  .stat-label { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
+  #login-box { max-width: 320px; margin: 60px auto; text-align: center; }
+  #login-box input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 15px; }
+  #login-box button { width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
+  select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="login-box">
+    <h2>🔒 관리자 로그인</h2>
+    <input type="password" id="pw" placeholder="비밀번호">
+    <button onclick="tryLogin()">입장</button>
+  </div>
+
+  <div id="dash" style="display:none;">
+    <header class="hub-header" style="text-align:left; padding:0;">
+      <h1 class="hub-title" style="font-size:22px;">📊 마음체크 유입 통계</h1>
+      <p class="hub-sub" style="margin:0;">기간: <select id="rangeSel" onchange="load()">
+        <option value="7">최근 7일</option>
+        <option value="30" selected>최근 30일</option>
+        <option value="90">최근 90일</option>
+      </select></p>
+    </header>
+
+    <div class="stat-cards" id="summaryCards"></div>
+
+    <h3>유입경로(src)별 현황</h3>
+    <table id="srcTable"><thead><tr><th>src</th><th>방문</th><th>검사시작</th><th>검사완료</th><th>센터연결클릭</th></tr></thead><tbody></tbody></table>
+
+    <h3>콘텐츠별 현황</h3>
+    <table id="testTable"><thead><tr><th>콘텐츠</th><th>시작</th><th>완료</th><th>완료율</th><th>센터연결클릭</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<script src="js/hub-core.js?v=2"></script>
+<script>
+function tryLogin() {
+  const pw = document.getElementById('pw').value;
+  if (pw === 'mindcheck1388!') {
+    sessionStorage.setItem('mc_admin', '1');
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('dash').style.display = 'block';
+    load();
+  } else {
+    alert('비밀번호가 틀렸습니다.');
+  }
+}
+if (sessionStorage.getItem('mc_admin') === '1') {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+}
+
+async function load() {
+  const days = Number(document.getElementById('rangeSel').value);
+  let events = [];
+  try {
+    events = await Hub.listEvents(days);
+  } catch (e) {
+    document.getElementById('summaryCards').innerHTML = `<p style="color:red">통계를 불러오지 못했습니다: ${e.message}<br>Supabase에 hub_events 테이블이 생성되어 있는지 확인해주세요. (supabase_setup.sql 참고)</p>`;
+    return;
+  }
+
+  const visits = events.filter(e => e.event_type === 'visit' || e.event_type === 'test_start').length;
+  const completes = events.filter(e => e.event_type === 'test_complete').length;
+  const ctaClicks = events.filter(e => e.event_type === 'cta_click').length;
+  const uniqueSrc = new Set(events.map(e => e.src)).size;
+
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${visits}</div><div class="stat-label">총 방문/시작</div></div>
+    <div class="stat-card"><div class="stat-num">${completes}</div><div class="stat-label">검사 완료</div></div>
+    <div class="stat-card"><div class="stat-num">${ctaClicks}</div><div class="stat-label">센터 연결 클릭</div></div>
+    <div class="stat-card"><div class="stat-num">${uniqueSrc}</div><div class="stat-label">유입경로 수</div></div>
+  `;
+
+  // src별 집계
+  const bySrc = {};
+  events.forEach(e => {
+    const s = e.src || 'direct';
+    if (!bySrc[s]) bySrc[s] = { visit: 0, start: 0, complete: 0, cta: 0 };
+    if (e.event_type === 'visit') bySrc[s].visit++;
+    if (e.event_type === 'test_start') bySrc[s].start++;
+    if (e.event_type === 'test_complete') bySrc[s].complete++;
+    if (e.event_type === 'cta_click') bySrc[s].cta++;
+  });
+  const srcRows = Object.entries(bySrc).sort((a, b) => (b[1].visit + b[1].start) - (a[1].visit + a[1].start));
+  document.querySelector('#srcTable tbody').innerHTML = srcRows.map(([src, v]) =>
+    `<tr><td>${src}</td><td>${v.visit}</td><td>${v.start}</td><td>${v.complete}</td><td>${v.cta}</td></tr>`
+  ).join('') || '<tr><td colspan="5">데이터 없음</td></tr>';
+
+  // 콘텐츠별 집계
+  const byTest = {};
+  events.forEach(e => {
+    const t = e.test_id || '(홈)';
+    if (!byTest[t]) byTest[t] = { start: 0, complete: 0, cta: 0 };
+    if (e.event_type === 'test_start') byTest[t].start++;
+    if (e.event_type === 'test_complete') byTest[t].complete++;
+    if (e.event_type === 'cta_click') byTest[t].cta++;
+  });
+  const testRows = Object.entries(byTest).sort((a, b) => b[1].start - a[1].start);
+  document.querySelector('#testTable tbody').innerHTML = testRows.map(([t, v]) => {
+    const rate = v.start > 0 ? Math.round((v.complete / v.start) * 100) + '%' : '-';
+    return `<tr><td>${t}</td><td>${v.start}</td><td>${v.complete}</td><td>${rate}</td><td>${v.cta}</td></tr>`;
+  }).join('') || '<tr><td colspan="5">데이터 없음</td></tr>';
+}
+</script>
+</body>
+</html>
