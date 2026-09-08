@@ -15,10 +15,13 @@ create table if not exists hub_events (
 alter table hub_events enable row level security;
 
 -- 개인정보(이름/전화번호 등)를 저장하지 않으므로, 익명 키로 기록/조회 모두 허용
-create policy if not exists "hub_events anon insert" on hub_events
+-- (정책은 IF NOT EXISTS 문법이 없어서, 기존 정책이 있으면 지우고 다시 만듭니다)
+drop policy if exists "hub_events anon insert" on hub_events;
+create policy "hub_events anon insert" on hub_events
   for insert to anon with check (true);
 
-create policy if not exists "hub_events anon select" on hub_events
+drop policy if exists "hub_events anon select" on hub_events;
+create policy "hub_events anon select" on hub_events
   for select to anon using (true);
 
 create index if not exists hub_events_created_at_idx on hub_events (created_at);
