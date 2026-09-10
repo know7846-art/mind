@@ -34,6 +34,8 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  word-break: keep-all; /* 한글 단어 중간에서 어색하게 줄바꿈되는 것 방지 (예: "스타일은?" -> "은?" 혼자 남는 문제) */
+  overflow-wrap: break-word;
 }
 
 .wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; width: 100%; }
@@ -96,12 +98,12 @@ body {
   font-size: 10.5px; font-weight: 800; letter-spacing: .3px; z-index: 2; color: #fff;
 }
 .cover-icon {
-  position: absolute; top: 6%; left: 50%; right: 0; bottom: 32%; transform: translateX(-50%);
+  position: absolute; top: 6%; left: 50%; right: 0; bottom: 42%; transform: translateX(-50%);
   display: flex; align-items: center; justify-content: center;
 }
 .cover-hero .cover-icon { left: 14%; right: auto; bottom: 8%; top: 8%; transform: none; }
 .cover-icon img {
-  width: 58%; max-width: 130px; height: auto;
+  width: 50%; max-width: 110px; height: auto;
   filter: drop-shadow(0 6px 14px rgba(0,0,0,.18));
 }
 .cover-hero .cover-icon img { width: auto; height: 84%; max-width: none; }
