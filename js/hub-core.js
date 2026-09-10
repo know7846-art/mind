@@ -85,17 +85,20 @@ const Hub = {
   },
 
   // 결과 화면 공통 CTA 블록 렌더링
-  renderCTA(container, testId) {
+  // urgent=true 면(고위험 구간) 조금 더 눈에 띄게, 기본은 담담하고 차분한 톤으로 표시
+  renderCTA(container, testId, urgent) {
+    const leadText = urgent
+      ? '결과를 보니 마음이 많이 쓰였을 것 같아요. 이런 감정은 혼자 견디지 않아도 괜찮아요.'
+      : '이 결과는 참고용이에요. 더 이야기 나눠보고 싶어질 때, 아래 방법들이 있다는 것만 기억해주세요.';
     container.innerHTML = `
-      <div class="cta-box">
-        <p class="cta-lead">이 검사는 전문적인 진단이 아닌 <b>간이 자가 점검</b>이에요.<br>
-        조금이라도 마음이 쓰인다면, 편하게 이야기 나눠보는 건 어떨까요?</p>
+      <div class="cta-box ${urgent ? 'cta-box-urgent' : ''}">
+        <p class="cta-lead">${leadText}</p>
         <div class="cta-buttons">
-          <a class="cta-btn cta-btn-primary" href="${CENTER.kakaoUrl}" target="_blank" rel="noopener" data-cta="kakao">💬 카카오톡 '${CENTER.kakaoName}'로 문의</a>
+          <a class="cta-btn ${urgent ? 'cta-btn-primary' : ''}" href="${CENTER.kakaoUrl}" target="_blank" rel="noopener" data-cta="kakao">💬 카카오톡 '${CENTER.kakaoName}'로 문의</a>
           <a class="cta-btn" href="${CENTER.phoneHref}" data-cta="phone">📞 센터 전화 (${CENTER.phone})</a>
           <a class="cta-btn" href="${CENTER.helplineHref}" data-cta="helpline">☎️ 청소년전화 ${CENTER.helpline} (24시간)</a>
         </div>
-        <p class="cta-note">${CENTER.name} · 만 9~24세 무료 상담</p>
+        <p class="cta-note">${CENTER.name} · 만 9~24세 무료 상담 · 이 검사는 전문 진단이 아닌 간이 자가 점검입니다</p>
       </div>
     `;
     container.querySelectorAll('[data-cta]').forEach(btn => {

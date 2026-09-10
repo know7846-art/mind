@@ -113,10 +113,50 @@ function runTest(config) {
     else renderScoreResult();
   }
 
+  // 문항별 dim(하위영역) 태그를 기준으로 영역별 점수를 백분율로 계산
+  function computeDimBreakdown() {
+    if (!config.dims) return null;
+    const sums = {}, counts = {};
+    config.questions.forEach((q, i) => {
+      if (!q.dim) return;
+      const a = answers[i];
+      sums[q.dim] = (sums[q.dim] || 0) + (a ? a.score : 0);
+      counts[q.dim] = (counts[q.dim] || 0) + 1;
+    });
+    return Object.keys(config.dims).map(key => ({
+      key, label: config.dims[key],
+      pct: counts[key] ? Math.round((sums[key] / (counts[key] * 3)) * 100) : 0
+    }));
+  }
+
+  function renderDimBox(dimData) {
+    if (!dimData || sharedTotal !== null) return '';
+    return `<div class="dim-box">
+      <p class="dim-title">🔎 영역별로 조금 더 자세히 보면</p>
+      ${dimData.map(d => `
+        <div class="dim-row">
+          <div class="dim-row-head"><span>${d.label}</span><span class="dim-row-pct">${d.pct}%</span></div>
+          <div class="dim-bar"><div class="dim-bar-fill" data-pct="${d.pct}" style="width:0%"></div></div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  function renderTipsBox(tips) {
+    if (!tips || !tips.length) return '';
+    return `<div class="tips-box">
+      <p class="tips-title">💡 이럴 때 도움이 돼요</p>
+      <ul class="tips-list">${tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  }
+
   function renderScoreResult() {
     const total = sharedTotal !== null ? sharedTotal : answers.reduce((a, b) => a + (b ? b.score : 0), 0);
     const band = config.bands.find(b => total <= b.max) || config.bands[config.bands.length - 1];
+    const bandIdx = config.bands.indexOf(band);
+    const urgent = bandIdx >= config.bands.length - 2; // 상위 2개 구간(다소 심함/심함)만 CTA를 조금 더 눈에 띄게
     const gaugePct = Math.min(100, Math.round((total / maxScore) * 100));
+    const dimData = computeDimBreakdown();
     resultTotalForShare = total;
     Hub.log(sharedTotal !== null ? 'shared_view' : 'test_complete', config.id, `score:${total};band:${band.label}`);
 
@@ -130,6 +170,8 @@ function runTest(config) {
         <p class="gauge-label">나의 ${config.gaugeLabel || '지수'}: <b>${total} / ${maxScore}</b></p>
         <p class="result-desc">${band.desc}</p>
       </div>
+      ${renderDimBox(dimData)}
+      ${renderTipsBox(band.tips)}
       ${sharedTotal !== null ? `<button class="btn-next" id="btn-try-mine">나도 해보기 →</button>` : ''}
       ${shareResultBlock()}
       <div id="cta-slot"></div>
@@ -139,10 +181,13 @@ function runTest(config) {
     requestAnimationFrame(() => {
       const fill = app.querySelector('.gauge-fill');
       if (fill) setTimeout(() => { fill.style.width = gaugePct + '%'; }, 80);
+      app.querySelectorAll('.dim-bar-fill').forEach(el => {
+        setTimeout(() => { el.style.width = el.getAttribute('data-pct') + '%'; }, 120);
+      });
     });
     fitTitleToOneLine(app.querySelector('.result-band'), 22, 14);
     wireResultActions({ emoji: band.emoji, category: config.intro.title, label: band.label, desc: band.desc });
-    Hub.renderCTA(document.getElementById('cta-slot'), config.id);
+    Hub.renderCTA(document.getElementById('cta-slot'), config.id, urgent);
     const tryBtn = document.getElementById('btn-try-mine');
     if (tryBtn) tryBtn.addEventListener('click', () => {
       history.replaceState(null, '', location.pathname);
@@ -180,6 +225,7 @@ function runTest(config) {
         <div class="type-traits">${traits}</div>
         ${matchType ? `<div class="type-match">✨ 찰떡궁합: ${matchType.emoji} ${matchType.title}</div>` : ''}
       </div>
+      ${renderTipsBox(t.tips)}
       ${sharedTypeKey !== null ? `<button class="btn-next" id="btn-try-mine">나도 해보기 →</button>` : ''}
       ${shareResultBlock()}
       <div id="cta-slot"></div>
@@ -188,7 +234,7 @@ function runTest(config) {
     `;
     wireResultActions({ emoji: t.emoji, category: config.intro.title, label: t.title, desc: t.desc });
     fitTitleToOneLine(app.querySelector('.type-title'), 23, 15);
-    Hub.renderCTA(document.getElementById('cta-slot'), config.id);
+    Hub.renderCTA(document.getElementById('cta-slot'), config.id, false);
     const tryBtn = document.getElementById('btn-try-mine');
     if (tryBtn) tryBtn.addEventListener('click', () => {
       history.replaceState(null, '', location.pathname);

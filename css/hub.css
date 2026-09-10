@@ -217,19 +217,45 @@ body {
 .basis-body ul { margin: 6px 0; padding-left: 18px; }
 
 .cta-box {
-  margin-top: 20px; padding: 24px 20px; border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--primary-light), var(--accent-pink-light));
-  border: 1px solid var(--border); text-align: center;
+  margin-top: 20px; padding: 20px 18px; border-radius: var(--radius-lg);
+  background: var(--bg-card); border: 1px solid var(--border); text-align: center;
 }
-.cta-lead { font-size: 14.5px; line-height: 1.7; margin: 0 0 18px; color: var(--text-primary); }
-.cta-buttons { display: flex; flex-direction: column; gap: 10px; }
+.cta-box-urgent {
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-pink-light));
+  border-color: transparent;
+}
+.cta-lead { font-size: 13.5px; line-height: 1.7; margin: 0 0 16px; color: var(--text-secondary); }
+.cta-box-urgent .cta-lead { color: var(--text-primary); font-size: 14.5px; }
+.cta-buttons { display: flex; flex-direction: column; gap: 9px; }
 .cta-btn {
-  display: block; padding: 14px; border-radius: 14px; text-decoration: none;
-  font-weight: 700; font-size: 15px; background: #fff; color: var(--text-primary);
+  display: block; padding: 12px 14px; border-radius: 14px; text-decoration: none;
+  font-weight: 600; font-size: 13.5px; background: #fff; color: var(--text-secondary);
   border: 1.5px solid var(--border);
 }
-.cta-btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-.cta-note { margin: 16px 0 0; font-size: 12px; color: var(--text-muted); }
+.cta-btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 700; font-size: 15px; padding: 14px; }
+.cta-note { margin: 16px 0 0; font-size: 11.5px; color: var(--text-muted); }
+
+/* ===== 자세한 결과 설명(하위 영역 + 맞춤 조언) ===== */
+.dim-box {
+  margin-top: 18px; padding: 18px 18px 16px; border-radius: var(--radius-lg);
+  background: var(--bg-card); border: 1px solid var(--border); text-align: left;
+}
+.dim-title { font-size: 12.5px; font-weight: 800; color: var(--text-muted); letter-spacing: .3px; margin: 0 0 14px; }
+.dim-row { margin-bottom: 12px; }
+.dim-row:last-child { margin-bottom: 0; }
+.dim-row-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+.dim-row-pct { color: var(--text-secondary); font-weight: 600; }
+.dim-bar { height: 8px; border-radius: 6px; background: var(--border); overflow: hidden; }
+.dim-bar-fill { height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--accent-pink)); transition: width 1s cubic-bezier(.22,1,.36,1); }
+
+.tips-box {
+  margin-top: 18px; padding: 18px 18px 16px; border-radius: var(--radius-lg);
+  background: var(--bg-card); border: 1px solid var(--border); text-align: left;
+}
+.tips-title { font-size: 13.5px; font-weight: 800; margin: 0 0 12px; }
+.tips-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.tips-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); }
+.tips-list li::before { content: '·'; color: var(--primary); font-weight: 900; font-size: 18px; line-height: 1.2; }
 
 /* ===== 공통 버튼/링크 ===== */
 .btn-next {
