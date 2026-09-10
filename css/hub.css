@@ -279,14 +279,14 @@ body {
   .bg-blob, .cover-sparkle, .intro-emoji, .cover-card { animation: none !important; transition: none !important; }
 }
 
-/* ===== 태블릿/데스크톱: 화면이 넓어질수록 갤러리를 더 넓게, 카드도 더 많은 열로 ===== */
+/* ===== 태블릿/데스크톱: 화면이 넓어져도 카드는 항상 2열(2x2)로 고정, 갤러리 폭만 넓게 ===== */
 @media (min-width: 760px) {
-  .home-wrap { max-width: 960px; }
-  .cover-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .home-wrap { max-width: 820px; }
+  .cover-grid { gap: 18px; }
 }
 @media (min-width: 1100px) {
-  .home-wrap { max-width: 1180px; }
-  .cover-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .home-wrap { max-width: 900px; }
+  .cover-grid { gap: 20px; }
   .cover-card { border-radius: 26px; }
 }
 @media (min-width: 1100px) and (hover: hover) {
