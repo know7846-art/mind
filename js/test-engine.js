@@ -196,7 +196,11 @@ function runTest(config) {
       });
     });
     fitTitleToOneLine(app.querySelector('.result-band'), 22, 14);
-    wireResultActions({ emoji: band.emoji, category: config.intro.title, label: band.label, desc: band.desc });
+    wireResultActions({
+      emoji: band.emoji, category: config.intro.title, label: band.label, desc: band.desc,
+      scoreLine: `나의 ${config.gaugeLabel || '지수'}  ${total} / ${maxScore}`,
+      tip: band.tips && band.tips[0]
+    });
     Hub.renderCTA(document.getElementById('cta-slot'), config.id, urgent);
     const tryBtn = document.getElementById('btn-try-mine');
     if (tryBtn) tryBtn.addEventListener('click', () => {
@@ -245,7 +249,11 @@ function runTest(config) {
       ${basisBlock()}
       ${backLink()}
     `;
-    wireResultActions({ emoji: t.emoji, category: config.intro.title, label: t.title, desc: t.desc });
+    wireResultActions({
+      emoji: t.emoji, category: config.intro.title, label: t.title, desc: t.desc,
+      scoreLine: matchType ? `찰떡궁합  ${matchType.emoji} ${matchType.title}` : null,
+      tip: t.tips && t.tips[0]
+    });
     fitTitleToOneLine(app.querySelector('.type-title'), 23, 15);
     Hub.renderCTA(document.getElementById('cta-slot'), config.id, false);
     const tryBtn = document.getElementById('btn-try-mine');
@@ -272,60 +280,89 @@ function runTest(config) {
   }
 
   // ── 결과 카드 이미지 생성 (Canvas, 서버 불필요) ──────────────
-  // 실제로 그리지 않고 줄바꿈 결과만 계산 (카드 높이를 텍스트 양에 맞추기 위해 먼저 필요)
-  function measureWrappedLines(ctx, text, maxWidth) {
-    const chars = text.split('');
+  // 화면에 보이는 것과 동일한 팔레트/폰트 톤으로, 단어(어절) 단위로만 줄바꿈해서
+  // "스타일은?" → "은?" 처럼 단어 중간이 어색하게 잘리는 일이 없도록 함
+  const SHARE_FONT = "'Lato', 'Pretendard', sans-serif";
+
+  function wrapByWords(ctx, text, maxWidth) {
+    const words = text.split(/\s+/).filter(Boolean);
     const lines = [];
     let line = '';
-    for (let i = 0; i < chars.length; i++) {
-      const testLine = line + chars[i];
-      if (ctx.measureText(testLine).width > maxWidth && line) {
-        lines.push(line);
-        line = chars[i];
-      } else {
-        line = testLine;
+    words.forEach(word => {
+      // 한 단어 자체가 maxWidth보다 길면(드묾) 그 단어만 예외적으로 글자 단위로 쪼갬
+      if (ctx.measureText(word).width > maxWidth) {
+        if (line) { lines.push(line); line = ''; }
+        let sub = '';
+        for (const ch of word) {
+          const test = sub + ch;
+          if (ctx.measureText(test).width > maxWidth && sub) { lines.push(sub); sub = ch; }
+          else sub = test;
+        }
+        if (sub) line = sub;
+        return;
       }
-    }
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
     if (line) lines.push(line);
     return lines;
   }
 
   function drawWrappedLines(ctx, lines, x, y, lineHeight) {
     lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
+    return y + lines.length * lineHeight;
   }
 
-  function generateResultImage({ emoji, category, label, desc }) {
+  async function generateResultImage({ emoji, category, label, desc, scoreLine, tip }) {
+    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+
     const W = 1080;
     const measureCanvas = document.createElement('canvas');
     const mctx = measureCanvas.getContext('2d');
-    mctx.font = '400 30px sans-serif';
-    const descClean = desc.replace(/<[^>]+>/g, '').slice(0, 90);
     const cardX = 60, cardTop = 170, cardW = W - 120;
-    const descLines = measureWrappedLines(mctx, descClean, cardW - 120);
-    const lineHeight = 44;
+    const textMaxWidth = cardW - 120;
+    const lineHeight = 46;
 
-    // 결과 라벨(밴드/유형명) 글자 크기 — 길면 한 줄에 맞게 자동으로 줄임
+    const descClean = desc.replace(/<[^>]+>/g, '').trim();
+    mctx.font = `400 30px ${SHARE_FONT}`;
+    const descLines = wrapByWords(mctx, descClean, textMaxWidth);
+
+    const tipClean = tip ? tip.replace(/<[^>]+>/g, '').trim() : null;
+    mctx.font = `700 28px ${SHARE_FONT}`;
+    const tipLines = tipClean ? wrapByWords(mctx, '💡 ' + tipClean, textMaxWidth) : [];
+
+    // 결과 라벨(밴드/유형명) 글자 크기 — 길면 한 줄에 맞게, 그래도 안 맞으면 두 줄로
     let labelFontSize = 52;
-    const maxLabelWidth = cardW - 200;
-    mctx.font = `800 ${labelFontSize}px sans-serif`;
-    while (mctx.measureText(label).width > maxLabelWidth && labelFontSize > 28) {
+    const maxLabelWidth = cardW - 160;
+    mctx.font = `800 ${labelFontSize}px ${SHARE_FONT}`;
+    while (mctx.measureText(label).width > maxLabelWidth && labelFontSize > 34) {
       labelFontSize -= 2;
-      mctx.font = `800 ${labelFontSize}px sans-serif`;
+      mctx.font = `800 ${labelFontSize}px ${SHARE_FONT}`;
     }
+    const labelLines = wrapByWords(mctx, label, maxLabelWidth);
+    const labelLineHeight = labelFontSize * 1.25;
 
-    // 카드 안 콘텐츠 배치 기준선(카드 top 기준 상대값)
-    const categoryOffset = 90;
-    const emojiOffset = 220;
-    const labelOffset = 320;
-    const descStartOffset = 400;
-    const cardBottomPad = 70;
+    // ── 세로 배치: 위에서부터 차례로 커서를 내려가며 계산 (실제 그리는 Y좌표와 동일한 변수 사용) ──
+    const categoryY = cardTop + 90;
+    const emojiY = categoryY + 130;             // 큰 이모지(100px) 한 줄 분량 확보
+    let cursor = emojiY + 60;                   // 이모지와 라벨 사이 여유
+    const labelTopY = cursor;
+    cursor += labelLines.length * labelLineHeight + 16;
+    let scoreLineY = null;
+    if (scoreLine) { scoreLineY = cursor; cursor += 56; }
+    const descTopY = cursor + 14;
+    cursor = descTopY + descLines.length * lineHeight;
+    let tipTopY = null;
+    if (tipLines.length) { cursor += 34; tipTopY = cursor; cursor += tipLines.length * 40; }
+    const cardBottomY = cursor + 60;
+    const cardH = cardBottomY - cardTop;
 
-    const descBlockHeight = (descLines.length - 1) * lineHeight;
-    const cardH = descStartOffset + descBlockHeight + cardBottomPad;
-    const cardBottomY = cardTop + cardH;
-
-    // 하단 CTA 영역
-    const ctaGap = 100;
+    const ctaGap = 90;
     const ctaLine1Y = cardBottomY + ctaGap;
     const ctaLine2Y = ctaLine1Y + 50;
     const H = ctaLine2Y + 70;
@@ -334,17 +371,18 @@ function runTest(config) {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    // 배경 그라데이션
+    // 배경 그라데이션 (브랜드 코랄→핑크)
     const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, '#6C63FF');
-    grad.addColorStop(1, '#FF6B9D');
+    grad.addColorStop(0, '#FF9478');
+    grad.addColorStop(1, '#F0577E');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // 은은한 원형 장식
+    // 은은한 원형 블롭 장식
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.beginPath(); ctx.arc(W * 0.88, H * 0.08, 170, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.beginPath(); ctx.arc(W * 0.85, H * 0.1, 160, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W * 0.08, H * 0.95, 130, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W * 0.06, H * 0.97, 140, 0, Math.PI * 2); ctx.fill();
 
     // 흰색 카드 (내용 길이에 맞춘 높이)
     ctx.fillStyle = '#ffffff';
@@ -356,35 +394,62 @@ function runTest(config) {
     // 상단 로고
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.font = '700 34px sans-serif';
-    ctx.fillText('💜 마음카드', W / 2, 100);
+    ctx.font = `800 34px ${SHARE_FONT}`;
+    ctx.fillText('🌱 마음카드', W / 2, 100);
 
     // 카테고리 라벨
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = '700 26px sans-serif';
-    ctx.fillText(category, W / 2, cardTop + categoryOffset);
+    ctx.fillStyle = '#9CA8AC';
+    ctx.font = `700 26px ${SHARE_FONT}`;
+    ctx.fillText(category, W / 2, categoryY);
 
     // 이모지
-    ctx.font = '110px sans-serif';
-    ctx.fillText(emoji, W / 2, cardTop + emojiOffset);
+    ctx.font = `100px ${SHARE_FONT}`;
+    ctx.fillText(emoji, W / 2, emojiY);
 
-    // 결과 라벨(밴드/유형명)
-    ctx.fillStyle = '#211F33';
-    ctx.font = `800 ${labelFontSize}px sans-serif`;
-    ctx.fillText(label, W / 2, cardTop + labelOffset);
+    // 결과 라벨(밴드/유형명) — 필요하면 여러 줄
+    ctx.fillStyle = '#1E3A45';
+    ctx.font = `800 ${labelFontSize}px ${SHARE_FONT}`;
+    labelLines.forEach((l, i) => ctx.fillText(l, W / 2, labelTopY + i * labelLineHeight));
 
-    // 설명 텍스트 (미리 계산해둔 줄)
-    ctx.fillStyle = '#6B7280';
-    ctx.font = '400 30px sans-serif';
+    // 점수/궁합 한 줄 (있을 때만) — 코랄 배경의 알약 표시
+    if (scoreLine) {
+      ctx.font = `700 27px ${SHARE_FONT}`;
+      const pillPadX = 28;
+      const textW = ctx.measureText(scoreLine).width;
+      const pillW = textW + pillPadX * 2;
+      const pillH = 46;
+      const pillX = W / 2 - pillW / 2;
+      const pillY = scoreLineY - 32;
+      ctx.fillStyle = '#FFE3DC';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+      else ctx.rect(pillX, pillY, pillW, pillH);
+      ctx.fill();
+      ctx.fillStyle = '#E85A42';
+      ctx.fillText(scoreLine, W / 2, pillY + 32);
+    }
+
+    // 설명 텍스트 (단어 단위 줄바꿈, 전체 문장 그대로)
+    ctx.fillStyle = '#6B7C82';
+    ctx.font = `400 30px ${SHARE_FONT}`;
     ctx.textAlign = 'left';
-    drawWrappedLines(ctx, descLines, cardX + 60, cardTop + descStartOffset, lineHeight);
+    drawWrappedLines(ctx, descLines, cardX + 60, descTopY, lineHeight);
     ctx.textAlign = 'center';
+
+    // 맞춤 조언 한 줄 (있을 때만)
+    if (tipTopY) {
+      ctx.fillStyle = '#E0A72A';
+      ctx.font = `700 27px ${SHARE_FONT}`;
+      ctx.textAlign = 'left';
+      drawWrappedLines(ctx, tipLines, cardX + 60, tipTopY, 40);
+      ctx.textAlign = 'center';
+    }
 
     // 하단 CTA
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.font = '700 32px sans-serif';
+    ctx.font = `800 32px ${SHARE_FONT}`;
     ctx.fillText('나도 해보러 가기 👉', W / 2, ctaLine1Y);
-    ctx.font = '700 30px sans-serif';
+    ctx.font = `700 30px ${SHARE_FONT}`;
     ctx.fillText(location.host, W / 2, ctaLine2Y);
 
     return new Promise(resolve => canvas.toBlob(resolve, 'image/png', 0.95));
