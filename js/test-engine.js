@@ -69,7 +69,7 @@ function runTest(config) {
         ${checklist ? `<div class="checklist-box"><p class="checklist-label">🔎 결과에서 확인할 내용</p>${checklist}</div>` : ''}
         <button class="btn-next" id="btn-start">${intro.cta || '시작하기 →'}</button>
         <div class="intro-meta-row">
-          <span class="intro-meta-chip">⏱ ${config.questions.length}문항 · 1분</span>
+          <span class="intro-meta-chip">📝 ${config.questions.length}문항</span>
           ${intro.metaExtra ? `<span class="intro-meta-chip">${intro.metaExtra}</span>` : ''}
         </div>
       </div>
