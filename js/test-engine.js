@@ -1,5 +1,5 @@
 /**
- * 마음체크 - 간이 자가검사 / 유형테스트 공통 엔진
+ * 마음카드 - 간이 자가검사 / 유형테스트 공통 엔진
  * - config.mode === 'type'  → 유형 결과(연애스타일 등, 항목별 카운트 최다 유형)
  * - 그 외(기본)             → 점수 결과(외로움/스트레스/마음날씨 등, 총점→구간)
  */
@@ -150,6 +150,15 @@ function runTest(config) {
     </div>`;
   }
 
+  // 이 상태/유형일 때 생길 수 있는 어려움 (예상되는 갈등·마찰 상황)
+  function renderChallengeBox(challenges) {
+    if (!challenges || !challenges.length) return '';
+    return `<div class="tips-box tips-box-alert">
+      <p class="tips-title">⚡ 이럴 때 어려움이 생길 수 있어요</p>
+      <ul class="tips-list">${challenges.map(t => `<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  }
+
   function renderScoreResult() {
     const total = sharedTotal !== null ? sharedTotal : answers.reduce((a, b) => a + (b ? b.score : 0), 0);
     const band = config.bands.find(b => total <= b.max) || config.bands[config.bands.length - 1];
@@ -172,6 +181,7 @@ function runTest(config) {
       </div>
       ${renderDimBox(dimData)}
       ${renderTipsBox(band.tips)}
+      ${renderChallengeBox(band.challenges)}
       ${sharedTotal !== null ? `<button class="btn-next" id="btn-try-mine">나도 해보기 →</button>` : ''}
       ${shareResultBlock()}
       <div id="cta-slot"></div>
@@ -213,6 +223,7 @@ function runTest(config) {
 
     const traits = (t.traits || []).map(x => `<div class="type-trait">🔹 ${x}</div>`).join('');
     const matchType = t.match ? config.types[t.match] : null;
+    const hardType = t.hardMatch ? config.types[t.hardMatch] : null;
 
     app.innerHTML = `
       ${sharedTypeKey !== null ? `<p class="shared-badge">👀 친구가 공유한 결과예요</p>` : ''}
@@ -224,8 +235,10 @@ function runTest(config) {
         <p class="type-desc">${t.desc}</p>
         <div class="type-traits">${traits}</div>
         ${matchType ? `<div class="type-match">✨ 찰떡궁합: ${matchType.emoji} ${matchType.title}</div>` : ''}
+        ${hardType ? `<div class="type-match type-match-alert">⚡ 부딪히기 쉬운 유형: ${hardType.emoji} ${hardType.title}</div>` : ''}
       </div>
       ${renderTipsBox(t.tips)}
+      ${renderChallengeBox(t.challenges)}
       ${sharedTypeKey !== null ? `<button class="btn-next" id="btn-try-mine">나도 해보기 →</button>` : ''}
       ${shareResultBlock()}
       <div id="cta-slot"></div>
@@ -344,7 +357,7 @@ function runTest(config) {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.font = '700 34px sans-serif';
-    ctx.fillText('💜 마음체크', W / 2, 100);
+    ctx.fillText('💜 마음카드', W / 2, 100);
 
     // 카테고리 라벨
     ctx.fillStyle = '#9CA3AF';
@@ -390,7 +403,7 @@ function runTest(config) {
 
   function wireResultActions(shareData) {
     const shareUrl = () => buildShareUrl();
-    const shareText = () => `[마음체크] ${config.intro.title} 결과: ${shareData.label} ${shareData.emoji}\n나도 해보기 👉 `;
+    const shareText = () => `[마음카드] ${config.intro.title} 결과: ${shareData.label} ${shareData.emoji}\n나도 해보기 👉 `;
 
     // 이미지로 공유
     const imgBtn = document.getElementById('btn-share-img');
@@ -404,7 +417,7 @@ function runTest(config) {
           const blob = await generateResultImage(shareData);
           const file = new File([blob], 'mindcheck-result.png', { type: 'image/png' });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: '마음체크', text: shareText() });
+            await navigator.share({ files: [file], title: '마음카드', text: shareText() });
           } else {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -430,7 +443,7 @@ function runTest(config) {
         const text = shareText();
         const url = shareUrl();
         if (navigator.share) {
-          try { await navigator.share({ title: '마음체크', text, url }); return; } catch (e) { /* 취소 등 */ }
+          try { await navigator.share({ title: '마음카드', text, url }); return; } catch (e) { /* 취소 등 */ }
         }
         try {
           await navigator.clipboard.writeText(text + url);

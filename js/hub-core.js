@@ -1,7 +1,7 @@
 /**
- * 마음체크 허브 - 공통 유틸 (유입경로 추적 + 센터 연결 정보)
- * 마음체크 전용 Supabase 프로젝트를 사용합니다.
- * 사전 준비: Supabase에 hub_events 테이블 생성 필요 (마음체크/supabase_setup.sql 참고)
+ * 마음카드 허브 - 공통 유틸 (유입경로 추적 + 센터 연결 정보)
+ * 마음카드 전용 Supabase 프로젝트를 사용합니다.
+ * 사전 준비: Supabase에 hub_events 테이블 생성 필요 (마음카드/supabase_setup.sql 참고)
  */
 const SUPABASE_URL = 'https://riilcevawcjnwgiiablw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_g3oCy7izIFkgwu1m7hTNJw_upbiAzgv';

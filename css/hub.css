@@ -252,9 +252,13 @@ body {
   margin-top: 18px; padding: 18px 18px 16px; border-radius: var(--radius-lg);
   background: var(--bg-card); border: 1px solid var(--border); text-align: left;
 }
+.tips-box-alert { background: #FFF8EE; border-color: #F5E0BE; }
 .tips-title { font-size: 13.5px; font-weight: 800; margin: 0 0 12px; }
 .tips-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
 .tips-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); }
+.tips-box-alert .tips-list li { color: #8A5A1E; }
+
+.type-match-alert { display: flex; width: fit-content; background: rgba(0,0,0,.14); margin: 8px auto 0; }
 .tips-list li::before { content: '·'; color: var(--primary); font-weight: 900; font-size: 18px; line-height: 1.2; }
 
 /* ===== 공통 버튼/링크 ===== */

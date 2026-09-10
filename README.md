@@ -1,4 +1,4 @@
-# 마음체크 - 부천시청소년상담복지센터 유입 허브
+# 마음카드 - 부천시청소년상담복지센터 유입 허브
 
 타로 상담 / 연애 스타일 / 외로움·스트레스·마음날씨 간이 자가검사로 흥미를 유도하고,
 결과 화면 끝에서 자연스럽게 부천시청소년상담복지센터(전화·카카오톡·1388)로 연결되는
@@ -23,25 +23,25 @@
 
 ## 배포 전 준비
 1. Supabase 프로젝트(SQL Editor)에서 `supabase_setup.sql` 실행 → `hub_events` 테이블 생성
-   - 마음체크 전용 Supabase 프로젝트(`https://riilcevawcjnwgiiablw.supabase.co`)를 사용합니다.
-2. `마음체크/` 폴더 전체를 정적 호스팅(GitHub Pages 등)에 배포
+   - 마음카드 전용 Supabase 프로젝트(`https://riilcevawcjnwgiiablw.supabase.co`)를 사용합니다.
+2. `마음카드/` 폴더 전체를 정적 호스팅(GitHub Pages 등)에 배포
 3. `stats.html`의 관리자 비밀번호를 원하는 값으로 변경 권장
 
 ## Wee클래스 / 청년공간 배포 링크 만들기
 유입 경로별로 링크에 `?src=` 값만 다르게 붙여서 배포하면, `stats.html`에서 경로별 유입 수를 확인할 수 있어요.
 
 ```
-https://<배포주소>/마음체크/?src=wee_school1
-https://<배포주소>/마음체크/?src=wee_school2
-https://<배포주소>/마음체크/?src=youth_space1
-https://<배포주소>/마음체크/?src=poster_qr
+https://<배포주소>/마음카드/?src=wee_school1
+https://<배포주소>/마음카드/?src=wee_school2
+https://<배포주소>/마음카드/?src=youth_space1
+https://<배포주소>/마음카드/?src=poster_qr
 ```
 
 - 한 번 `?src=`로 들어오면 이후 허브 안에서 타로/검사 페이지로 이동해도 계속 같은 src 값으로 기록됩니다.
 - 학교/기관마다 고유한 src 값을 정해서 안내문·QR코드에 인쇄하면 됩니다.
 
 ## 통계 확인
-`https://<배포주소>/마음체크/stats.html` 접속 → 비밀번호 입력 →
+`https://<배포주소>/마음카드/stats.html` 접속 → 비밀번호 입력 →
 - 기간별 총 방문/검사완료/센터연결클릭 수
 - 유입경로(src)별 방문·시작·완료·센터연결클릭
 - 콘텐츠(타로/연애스타일/외로움/스트레스/마음날씨)별 시작·완료·완료율·센터연결클릭
