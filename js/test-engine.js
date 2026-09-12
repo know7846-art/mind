@@ -3,9 +3,24 @@
  * - config.mode === 'type'  → 유형 결과(연애스타일 등, 항목별 카운트 최다 유형)
  * - 그 외(기본)             → 점수 결과(외로움/스트레스/마음날씨 등, 총점→구간)
  */
+// Fisher-Yates 셔플 (원본 배열은 건드리지 않고 새 배열 반환)
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function runTest(config) {
   const app = document.getElementById('app');
   const mode = config.mode || 'score';
+
+  // 문항이 dim(하위영역)별로 나열되어 있으면 "비슷한 질문이 연달아 나온다"고 느껴질 수 있어서,
+  // 매번 문항 순서와 각 문항의 보기(선택지) 순서를 무작위로 섞어서 보여줌 (점수/유형 채점 로직은 영향 없음 — 값이 그대로 index를 따라감)
+  config.questions = shuffleArray(config.questions).map(q => ({ ...q, options: shuffleArray(q.options) }));
+
   let step = -1; // -1: 인트로, 0..n-1: 문항, n: 결과
   const answers = new Array(config.questions.length).fill(null);
   const maxScore = config.questions.length * 3;
