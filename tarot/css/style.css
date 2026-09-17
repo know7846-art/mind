@@ -253,7 +253,7 @@ body {
 
 @keyframes fadeInOut { 0%,100% { opacity:.3; } 50% { opacity:1; } }
 
-/* ===== 카드 덱 (동그란 카드, 겹치지 않는 배치) ===== */
+/* ===== 카드 덱 (카드 모양, 겹치지 않는 배치) ===== */
 .fan-deck-wrap {
   position: relative;
   width: 100%;
@@ -273,10 +273,10 @@ body {
   max-width: 900px;
 }
 
-/* 개별 카드 (JS가 생성) — 동그란 모양이라 서로 겹치지 않아 클릭이 쉬움 */
+/* 개별 카드 (JS가 생성) — 격자로 배치해서 서로 겹치지 않아 클릭이 쉬움 */
 .fan-card {
   position: static;
-  border-radius: 50%;
+  border-radius: 8px;
   background: linear-gradient(145deg, #2d1054, #1a0533);
   border: 1.5px solid rgba(168,85,247,.45);
   box-shadow: 0 4px 14px rgba(0,0,0,.5);
@@ -290,9 +290,9 @@ body {
 }
 
 .fan-card .fan-card-inner {
-  width: 78%; height: 78%;
+  width: 82%; height: 82%;
   border: 1px solid rgba(168,85,247,.25);
-  border-radius: 50%;
+  border-radius: 5px;
   background: repeating-linear-gradient(
     45deg, transparent, transparent 6px,
     rgba(124,58,237,.1) 6px, rgba(124,58,237,.1) 12px

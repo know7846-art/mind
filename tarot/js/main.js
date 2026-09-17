@@ -218,7 +218,7 @@ function burstParticles(x,y) {
 }
 
 // ──────────────────────────────────────────────────
-// ★ 부채형 카드 덱 생성 ★
+// ★ 카드 덱 생성 (카드 모양, 격자 배치) ★
 // ──────────────────────────────────────────────────
 function buildFanDeck() {
   const fanEl  = document.getElementById('fan-deck');
@@ -231,8 +231,9 @@ function buildFanDeck() {
   const isMobile   = vw < 600;
   const isTablet   = vw >= 600 && vw < 1024;
 
-  // 동그란 카드 크기 (서로 겹치지 않는 그리드로 배치해서 탭 실수를 방지)
-  const cardSize   = isMobile ? 38 : (isTablet ? 48 : 56);
+  // 카드 모양 크기 (2:3 비율) — 서로 겹치지 않는 그리드로 배치해서 탭 실수를 방지
+  const cardW      = isMobile ? 34 : (isTablet ? 42 : 50);
+  const cardH      = Math.round(cardW * 1.5);
 
   fanShuffled.forEach((cardIdx, i) => {
     const card = TAROT_CARDS[cardIdx];
@@ -244,7 +245,7 @@ function buildFanDeck() {
     el.title          = '카드를 선택하세요';
 
     el.style.cssText = `
-      width:${cardSize}px; height:${cardSize}px;
+      width:${cardW}px; height:${cardH}px;
       animation: fanCardAppear 0.5s ${i * 0.006}s ease both;
     `;
 
