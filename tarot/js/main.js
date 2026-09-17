@@ -227,44 +227,15 @@ function buildFanDeck() {
   // 78장 셔플
   fanShuffled = [...Array(78).keys()].sort(() => Math.random() - 0.5);
 
-  const total      = 78;
   const vw         = window.innerWidth;
   const isMobile   = vw < 600;
   const isTablet   = vw >= 600 && vw < 1024;
 
-  // 반응형 카드 크기
-  const cardW      = isMobile ? 44 : (isTablet ? 56 : 68);
-  const cardH      = isMobile ? 68 : (isTablet ? 88 : 108);
-
-  // 부채 파라미터
-  const fanWidth   = Math.min(vw - 32, 900);
-  const totalAngle = isMobile ? 150 : 140;     // 전체 부채 각도 (도)
-  const startAngle = -totalAngle / 2;
-  const step       = totalAngle / (total - 1);
-
-  // 반지름: 화면 크기에 비례
-  const radius     = isMobile ? 400 : (isTablet ? 540 : 660);
-
-  // 덱 높이 계산: 부채 호의 보이는 부분 + 여유
-  const maxAngleRad = (totalAngle / 2) * Math.PI / 180;
-  const arcHeight   = radius - radius * Math.cos(maxAngleRad);
-  const fanHeight   = Math.max(arcHeight + cardH * 0.6, isMobile ? 200 : 280);
-
-  fanEl.style.width  = fanWidth + 'px';
-  fanEl.style.height = fanHeight + 'px';
-
-  // 중심점 (x, y) — 부채 호의 중심 (카드 아래쪽 바깥)
-  const cx = fanWidth / 2;
-  const cy = fanHeight + radius * 0.88;
+  // 동그란 카드 크기 (서로 겹치지 않는 그리드로 배치해서 탭 실수를 방지)
+  const cardSize   = isMobile ? 38 : (isTablet ? 48 : 56);
 
   fanShuffled.forEach((cardIdx, i) => {
-    const card  = TAROT_CARDS[cardIdx];
-    const angleDeg  = startAngle + step * i;
-    const angleRad  = (angleDeg * Math.PI) / 180;
-
-    // 카드 중심 위치 계산 (호 위 배치)
-    const x = cx + radius * Math.sin(angleRad) - cardW / 2;
-    const y = cy - radius * Math.cos(angleRad) - cardH;
+    const card = TAROT_CARDS[cardIdx];
 
     const el = document.createElement('div');
     el.className = 'fan-card';
@@ -272,14 +243,9 @@ function buildFanDeck() {
     el.dataset.cardId = card.id;
     el.title          = '카드를 선택하세요';
 
-    // CSS 변수로 기본 transform 저장 (hover 시 translateY 추가에 사용)
-    const baseTransform = `rotate(${angleDeg}deg)`;
     el.style.cssText = `
-      left:${x}px; top:${y}px; width:${cardW}px; height:${cardH}px;
-      z-index:${i+1};
-      transform: ${baseTransform};
-      --base-transform: ${baseTransform};
-      animation: fanCardAppear 0.6s ${i * 0.008}s ease both;
+      width:${cardSize}px; height:${cardSize}px;
+      animation: fanCardAppear 0.5s ${i * 0.006}s ease both;
     `;
 
     // 카드 뒷면 디자인
