@@ -496,15 +496,32 @@ function runTest(config) {
         try {
           const blob = await generateResultImage(shareData);
           const file = new File([blob], 'mindcheck-result.png', { type: 'image/png' });
+          // 텍스트 안에 바로가기 링크를 함께 넣어서, 공유 대상 앱이 파일과 텍스트를 같이 받으면
+          // 이미지와 링크가 한 번에 전달되게 함
+          const textWithLink = shareText() + shareUrl();
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: '마음카드', text: shareText() });
+            try {
+              // url을 함께 지원하는 앱(공유 시트)에서는 이미지+텍스트+링크가 모두 전달됨
+              await navigator.share({ files: [file], title: '마음카드', text: textWithLink, url: shareUrl() });
+            } catch (shareErr) {
+              if (shareErr && shareErr.name === 'AbortError') throw shareErr;
+              // url 필드를 함께 넘기면 거부하는 일부 브라우저 대응 → text에 링크를 포함해 재시도
+              await navigator.share({ files: [file], title: '마음카드', text: textWithLink });
+            }
           } else {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = 'mindcheck-result.png';
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 5000);
-            alert('결과 이미지가 저장됐어요! 카톡/인스타에 첨부해서 보내보세요 📷');
+            // 이미지 공유를 지원하지 않는 환경에서는 링크를 클립보드에 같이 복사해서
+            // 이미지(다운로드)와 링크를 함께 전달할 수 있게 함
+            try {
+              await navigator.clipboard.writeText(textWithLink);
+              alert('결과 이미지가 저장됐어요! 바로가기 링크도 클립보드에 복사됐어요 📷🔗\n카톡/인스타에 이미지를 첨부하고, 링크는 붙여넣기 해서 함께 보내보세요.');
+            } catch (clipErr) {
+              alert('결과 이미지가 저장됐어요! 카톡/인스타에 첨부해서 보내보세요 📷\n\n바로가기 링크: ' + shareUrl());
+            }
           }
         } catch (e) {
           if (e && e.name !== 'AbortError') alert('이미지 생성 중 문제가 생겼어요. 다시 시도해 주세요.');
