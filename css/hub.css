@@ -133,11 +133,13 @@ body {
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent-pink)); transition: width .25s ease; }
 .q-num { font-size: 13px; color: var(--primary-dark); font-weight: 700; margin-bottom: 8px; }
 .btn-q-back {
-  display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px;
-  padding: 6px 4px; border: none; background: none; cursor: pointer;
-  font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 18px; padding: 13px 16px; border-radius: 14px;
+  border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--text-secondary);
+  transition: all .15s ease;
 }
-.btn-q-back:hover { color: var(--primary-dark); }
+.btn-q-back:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-light); }
 .q-text { font-size: clamp(18px, 4vw, 23px); font-weight: 700; line-height: 1.5; margin: 0 0 22px; }
 .opt-list { display: flex; flex-direction: column; gap: 10px; }
 .opt-btn {

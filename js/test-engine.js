@@ -102,12 +102,12 @@ function runTest(config) {
     const prevAnswer = answers[step]; // 이 문항으로 다시 돌아왔을 때 이전에 고른 답
     app.innerHTML = `
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ${step > 0 ? `<button type="button" class="btn-q-back" id="btn-q-back">← 이전 문항</button>` : ''}
       <p class="q-num">${step + 1} / ${config.questions.length} ${'✨'.repeat(step + 1)}</p>
       <p class="q-text">${q.text}</p>
       <div class="opt-list">
         ${q.options.map((o, i) => `<button class="opt-btn${o === prevAnswer ? ' selected' : ''}" data-i="${i}">${o.label}</button>`).join('')}
       </div>
+      ${step > 0 ? `<button type="button" class="btn-q-back" id="btn-q-back">← 이전 문항으로 돌아가기</button>` : ''}
     `;
     const buttons = app.querySelectorAll('.opt-btn');
     buttons.forEach(btn => {
