@@ -99,19 +99,21 @@ function runTest(config) {
   function renderQuestion() {
     const q = config.questions[step];
     const pct = Math.round((step / config.questions.length) * 100);
+    const prevAnswer = answers[step]; // 이 문항으로 다시 돌아왔을 때 이전에 고른 답
     app.innerHTML = `
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      ${step > 0 ? `<button type="button" class="btn-q-back" id="btn-q-back">← 이전 문항</button>` : ''}
       <p class="q-num">${step + 1} / ${config.questions.length} ${'✨'.repeat(step + 1)}</p>
       <p class="q-text">${q.text}</p>
       <div class="opt-list">
-        ${q.options.map((o, i) => `<button class="opt-btn" data-i="${i}">${o.label}</button>`).join('')}
+        ${q.options.map((o, i) => `<button class="opt-btn${o === prevAnswer ? ' selected' : ''}" data-i="${i}">${o.label}</button>`).join('')}
       </div>
     `;
     const buttons = app.querySelectorAll('.opt-btn');
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.disabled) return;
-        buttons.forEach(b => b.disabled = true);
+        buttons.forEach(b => { b.disabled = true; b.classList.remove('selected'); });
         btn.classList.add('selected');
         answers[step] = q.options[Number(btn.getAttribute('data-i'))];
         setTimeout(() => {
@@ -121,6 +123,14 @@ function runTest(config) {
         }, 280);
       });
     });
+    const backBtn = document.getElementById('btn-q-back');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        step--;
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   function renderResult() {
