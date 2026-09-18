@@ -253,8 +253,14 @@ function runTest(config) {
         <p class="type-title">${t.title}</p>
         <p class="type-desc">${t.desc}</p>
         <div class="type-traits">${traits}</div>
-        ${matchType ? `<div class="type-match">✨ 찰떡궁합: ${matchType.emoji} ${matchType.title}</div>` : ''}
-        ${hardType ? `<div class="type-match type-match-alert">⚡ 부딪히기 쉬운 유형: ${hardType.emoji} ${hardType.title}</div>` : ''}
+        ${matchType ? `
+          <button type="button" class="type-match" id="btn-match-toggle">✨ 찰떡궁합: ${matchType.emoji} ${matchType.title} <span class="type-match-arrow">▾</span></button>
+          <div class="type-match-detail" id="match-detail"></div>
+        ` : ''}
+        ${hardType ? `
+          <button type="button" class="type-match type-match-alert" id="btn-hard-toggle">⚡ 부딪히기 쉬운 유형: ${hardType.emoji} ${hardType.title} <span class="type-match-arrow">▾</span></button>
+          <div class="type-match-detail" id="hard-detail"></div>
+        ` : ''}
       </div>
       ${renderTipsBox(t.tips)}
       ${renderChallengeBox(t.challenges)}
@@ -270,6 +276,8 @@ function runTest(config) {
       tip: t.tips && t.tips[0]
     });
     fitTitleToOneLine(app.querySelector('.type-title'), 23, 15);
+    wireMatchToggle('btn-match-toggle', 'match-detail', t.match, matchType);
+    wireMatchToggle('btn-hard-toggle', 'hard-detail', t.hardMatch, hardType);
     Hub.renderCTA(document.getElementById('cta-slot'), config.id, false);
     const tryBtn = document.getElementById('btn-try-mine');
     if (tryBtn) tryBtn.addEventListener('click', () => {
@@ -279,6 +287,28 @@ function runTest(config) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 궁합/상극 유형 배지를 클릭하면 그 유형의 결과 미리보기(설명+특징)를 펼쳐서 보여줌
+  function wireMatchToggle(btnId, panelId, typeKey, type) {
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    if (!btn || !panel || !type) return;
+    btn.addEventListener('click', () => {
+      const isOpen = panel.classList.toggle('open');
+      btn.classList.toggle('expanded', isOpen);
+      if (isOpen && !panel.dataset.filled) {
+        const traits = (type.traits || []).map(x => `<div class="type-trait">🔹 ${x}</div>`).join('');
+        const link = `${location.pathname}?shared=1&type=${encodeURIComponent(typeKey)}`;
+        panel.innerHTML = `
+          <p class="type-match-detail-title">${type.emoji} ${type.title}</p>
+          <p class="type-match-detail-desc">${type.desc}</p>
+          ${traits}
+          <a class="type-match-detail-link" href="${link}" target="_blank" rel="noopener">이 유형 결과 전체 보기 →</a>
+        `;
+        panel.dataset.filled = '1';
+      }
+    });
   }
 
   function shareResultBlock() {
