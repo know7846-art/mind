@@ -1,0 +1,6 @@
+.DS_Store
+Thumbs.db
+*.local.html
+
+# Figma Make로 받은 디자인 시안 원본(React/Vite 스캐폴드) — 실제 배포 사이트와는 별개의 참고 자료라 추적하지 않음
+디자인/

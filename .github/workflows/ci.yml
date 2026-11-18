@@ -1,0 +1,49 @@
+name: CI
+
+# master로 들어오는 PR과, master에 직접 반영되는 push마다 테스트를 돌립니다.
+# 이 사이트는 빌드 시스템이 없는 정적 HTML/CSS/JS라 "빌드"는 별도 산출물 없이
+# 파일 구조(참조된 로컬 js/css 파일이 실제로 존재하는지)를 확인하는 선에서 대신합니다.
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 핵심 로직 테스트 (node --test)
+        run: npm test
+
+      - name: 정적 파일 참조 검증 (로컬 js/css 링크가 실제로 존재하는지)
+        shell: bash
+        run: |
+          set -e
+          missing=0
+          while IFS= read -r ref; do
+            # 상대경로 href/src만 검사 (http로 시작하는 외부 링크, # 앵커, mailto:/tel: 등은 제외)
+            case "$ref" in
+              http*|\#*|mailto:*|tel:*|"") continue ;;
+            esac
+            file="${ref%%\?*}"
+            found=0
+            for base in . tests tarot; do
+              if [ -f "$base/$file" ]; then found=1; break; fi
+            done
+            if [ "$found" -eq 0 ]; then
+              echo "::error::참조는 있지만 파일이 없음: $ref"
+              missing=1
+            fi
+          done < <(grep -rohE '(href|src)="(js|css|images|tests|tarot)/[^"]+\.(js|css|svg|jpg|png)[^"]*"' --include='*.html' . | sed -E 's/^(href|src)="//; s/"$//')
+          if [ "$missing" -eq 1 ]; then
+            echo "하나 이상의 js/css/이미지 참조가 깨져 있습니다."
+            exit 1
+          fi
+          echo "모든 로컬 파일 참조가 유효합니다."

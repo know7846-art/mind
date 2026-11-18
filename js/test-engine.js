@@ -81,7 +81,9 @@ function runTest(config) {
         <div class="intro-emoji">${intro.icon ? `<img src="${intro.icon}" alt="" class="intro-icon-img">` : intro.emoji}</div>
         <p class="intro-title">${intro.title}</p>
         <p class="intro-hook">${intro.hook}</p>
-        ${checklist ? `<div class="checklist-box"><p class="checklist-label">🔎 결과에서 확인할 내용</p>${checklist}</div>` : ''}
+        ${config.about ? `<div class="about-box"><p class="about-title">📖 ${config.about.title || '이 검사는 어떤 걸 보나요?'}</p><div class="about-body">${config.about.body}</div></div>` : ''}
+        ${(config.signs && config.signs.length) ? `<div class="tips-box" style="text-align:left;max-width:400px;margin:0 auto 16px;"><p class="tips-title">🔎 알아두면 좋은 신호들</p><ul class="tips-list">${config.signs.map(s => `<li>${s}</li>`).join('')}</ul></div>` : ''}
+        ${checklist ? `<div class="checklist-box"><p class="checklist-label">✅ 결과에서 확인할 내용</p>${checklist}</div>` : ''}
         <button class="btn-next" id="btn-start">${intro.cta || '시작하기 →'}</button>
         <div class="intro-meta-row">
           <span class="intro-meta-chip">📝 ${config.questions.length}문항</span>
@@ -331,7 +333,10 @@ function runTest(config) {
     return `<details class="basis-box"><summary>🔍 이 검사는 어떻게 만들어졌나요?</summary><div class="basis-body">${config.basis}</div></details>`;
   }
   function backLink() {
-    return `<a class="back-link" href="../index.html" style="display:block;text-align:center;margin-top:18px;">🌱 다른 검사 더 해보기</a>`;
+    return `
+      <a class="back-link" href="../index.html" style="display:block;text-align:center;margin-top:18px;">🌱 다른 검사 더 해보기</a>
+      <a class="back-link" href="../location.html" style="display:block;text-align:center;margin-top:6px;">📍 가까운 마음연결 거점 보기</a>
+    `;
   }
 
   // ── 결과 카드 이미지 생성 (Canvas, 서버 불필요) ──────────────

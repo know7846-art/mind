@@ -278,9 +278,16 @@
 <!-- ===== JS ===== -->
 <script src="js/tarot-data.js"></script>
 <script src="js/main.js"></script>
-<script src="../js/hub-core.js?v=3"></script>
+<script src="../js/hub-core.js?v=15"></script>
 <script>
-  Hub.log('test_start', 'tarot');
+  Hub.log('test_view', 'tarot');
+  // 시작은 소개 화면의 시작 버튼을 눌렀을 때 한 번만 기록 (다른 검사와 같은 기준)
+  let tarotStarted = false;
+  document.getElementById('btn-start')?.addEventListener('click', () => {
+    if (tarotStarted) return;
+    tarotStarted = true;
+    Hub.log('test_start', 'tarot');
+  });
   document.getElementById('btn-see-result')?.addEventListener('click', () => Hub.log('test_complete', 'tarot'));
   document.querySelectorAll('a[href^="tel:"]').forEach(a => a.addEventListener('click', () => Hub.log('cta_click', 'tarot', 'phone')));
 </script>

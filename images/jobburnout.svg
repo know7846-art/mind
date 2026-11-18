@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="candleFlame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD37A"/>
+      <stop offset="60%" stop-color="#FF9A52"/>
+      <stop offset="100%" stop-color="#E8603C"/>
+    </linearGradient>
+    <linearGradient id="candleBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE3CF"/>
+      <stop offset="100%" stop-color="#F0B48C"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="172" rx="48" ry="9" fill="#000" opacity=".16"/>
+  <ellipse cx="100" cy="112" rx="66" ry="24" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.4" transform="rotate(-8 100 112)"/>
+  <!-- 녹아내린 초 몸체 -->
+  <path d="M74 160 C 70 110, 68 92, 78 70 C 84 58, 116 58, 122 70 C 132 92, 130 110, 126 160 C 126 166, 74 166, 74 160 Z" fill="url(#candleBody)"/>
+  <!-- 녹아 흘러내린 촛농 -->
+  <path d="M80 92 C 74 100, 76 112, 84 112 C 90 112, 90 100, 86 92 Z" fill="#FFF3E6" opacity=".9"/>
+  <path d="M118 100 C 114 108, 116 118, 122 118 C 128 118, 126 106, 122 100 Z" fill="#FFF3E6" opacity=".9"/>
+  <!-- 힘없이 기운 작은 불꽃 -->
+  <path d="M100 30 C 92 42, 86 52, 96 60 C 100 63, 106 60, 106 54 C 106 48, 100 44, 100 30 Z" fill="url(#candleFlame)" transform="rotate(18 100 46)"/>
+  <!-- 처진 표정 -->
+  <g>
+    <path d="M86 118 q4 6 10 0" fill="none" stroke="#9C5A34" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M104 118 q4 6 10 0" fill="none" stroke="#9C5A34" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M90 134 q10 -3 20 0" fill="none" stroke="#9C5A34" stroke-width="3.2" stroke-linecap="round"/>
+  </g>
+  <g fill="#FFD37A" opacity=".8">
+    <path d="M42 70 l2.2 5.8 5.8 2.2 -5.8 2.2 -2.2 5.8 -2.2 -5.8 -5.8 -2.2 5.8 -2.2Z"/>
+    <path d="M160 128 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2Z"/>
+  </g>
+</svg>

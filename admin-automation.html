@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마음카드 - 운영 자동화 설정</title>
+<link rel="stylesheet" href="css/hub.css?v=13">
+<style>
+  .wrap { max-width: 1000px; }
+  #login-box { max-width: 340px; margin: 60px auto; text-align: center; }
+  #login-box input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 15px; box-sizing: border-box; }
+  #login-box button { width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
+  #login-box p.hint { font-size: 12px; color: var(--text-muted); margin-top: 14px; line-height: 1.6; }
+  .top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .nav-row { display: flex; gap: 8px; margin: 14px 0 20px; }
+  .nav-row a { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-decoration: none; }
+  .nav-row a.current { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .area-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .area-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; }
+  .area-card.disabled { opacity: .55; }
+  .area-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .area-name { font-size: 15.5px; font-weight: 800; margin: 0; }
+  .switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider { position: absolute; inset: 0; background: #ccc; border-radius: 999px; cursor: pointer; transition: .2s; }
+  .switch .slider:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + .slider { background: var(--primary); }
+  .switch input:checked + .slider:before { transform: translateX(18px); }
+  .field-row { margin-top: 10px; }
+  .field-row label { display: block; font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+  .field-row select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 13px; background: #fff; }
+  .level-badge { font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+  .level-report_only { background: #E1F8F3; color: #1D7F88; }
+  .level-draft { background: #FFF4DC; color: #9A6100; }
+  .level-pr { background: #FFE3DC; color: var(--primary-dark); }
+  .level-auto { background: #FFD9D9; color: #C23636; }
+  .save-hint { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+  #errorMsg { color: #D64545; text-align: center; font-size: 13.5px; margin: 20px 0; }
+</style>
+</head>
+<body data-no-footer>
+<div class="wrap">
+  <div id="login-box">
+    <h2>🔒 운영 자동화 관리자 로그인</h2>
+    <p class="hint" style="margin-top:0;">이 페이지는 role=admin 계정만 들어올 수 있어요.</p>
+    <input type="email" id="email" placeholder="관리자 이메일" autocomplete="username">
+    <input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password">
+    <button id="btnLogin">로그인</button>
+  </div>
+
+  <div id="dash" style="display:none;">
+    <header class="hub-header" style="text-align:left; padding:0;">
+      <div class="top-row">
+        <h1 class="hub-title" style="font-size:22px;">⚙️ 운영 자동화 설정</h1>
+        <button id="btnLogout" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;">로그아웃</button>
+      </div>
+      <p class="hub-sub" style="margin:8px 0 0;">영역마다 AI가 어디까지 일할지, 얼마나 자주 확인할지 정해요. 바꾸면 바로 저장되고 활동 기록에 남아요.</p>
+    </header>
+
+    <div class="nav-row">
+      <a href="admin-automation.html" class="current">설정</a>
+      <a href="admin-automation-inbox.html">승인 대기함 · 활동 기록</a>
+      <a href="applications-admin.html">신청 관리</a>
+      <a href="stats.html">유입 통계</a>
+    </div>
+
+    <div class="area-grid" id="areaGrid"></div>
+  </div>
+
+  <p id="errorMsg" style="display:none;"></p>
+</div>
+
+<script src="js/hub-core.js?v=15"></script>
+<script>
+const LEVEL_LABEL = { report_only: '보고만', draft: '초안 작성', pr: '수정 PR 작성', auto: '자동 처리' };
+const INTERVAL_LABEL = { hourly: '1시간마다', daily: '하루 1번', weekly: '일주일에 1번' };
+const NOTIFY_LABEL = { immediate: '즉시 알림', daily_digest: '하루 요약' };
+let settings = [];
+
+document.getElementById('btnLogin').addEventListener('click', doLogin);
+document.getElementById('btnLogout').addEventListener('click', () => { Hub.Admin.logout(); location.reload(); });
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('pw').value;
+  try {
+    await Hub.Admin.login(email, pw, { requireAdmin: true });
+    enterDash();
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function enterDash() {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  load();
+}
+
+async function load() {
+  try {
+    settings = await Hub.Automation.fetchSettings();
+  } catch (e) {
+    showError(e.message);
+    return;
+  }
+  render();
+}
+
+function render() {
+  const grid = document.getElementById('areaGrid');
+  grid.innerHTML = settings.map(s => `
+    <div class="area-card${s.enabled ? '' : ' disabled'}" data-id="${s.id}">
+      <div class="area-top">
+        <p class="area-name">${s.area}</p>
+        <label class="switch">
+          <input type="checkbox" data-field="enabled" ${s.enabled ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="level-badge level-${s.permission_level}">${LEVEL_LABEL[s.permission_level] || s.permission_level}</span>
+      <div class="field-row">
+        <label>AI 권한 단계</label>
+        <select data-field="permission_level">
+          ${Object.entries(LEVEL_LABEL).map(([k, v]) => `<option value="${k}" ${s.permission_level === k ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row">
+        <label>실행 주기</label>
+        <select data-field="run_interval">
+          ${Object.entries(INTERVAL_LABEL).map(([k, v]) => `<option value="${k}" ${s.run_interval === k ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row">
+        <label>알림 기준</label>
+        <select data-field="notify_threshold">
+          ${Object.entries(NOTIFY_LABEL).map(([k, v]) => `<option value="${k}" ${s.notify_threshold === k ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <p class="save-hint" data-save-hint></p>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.area-card').forEach(card => {
+    const id = card.getAttribute('data-id');
+    const setting = settings.find(s => String(s.id) === id);
+    card.querySelectorAll('[data-field]').forEach(el => {
+      el.addEventListener('change', async () => {
+        const field = el.getAttribute('data-field');
+        const value = field === 'enabled' ? el.checked : el.value;
+        const hint = card.querySelector('[data-save-hint]');
+        hint.textContent = '저장 중...';
+        try {
+          await Hub.Automation.updateSetting(id, setting.area, { [field]: value });
+          setting[field] = value;
+          hint.textContent = '저장됨 · ' + new Date().toLocaleTimeString('ko-KR');
+          card.classList.toggle('disabled', !setting.enabled);
+          const badge = card.querySelector('.level-badge');
+          badge.className = 'level-badge level-' + setting.permission_level;
+          badge.textContent = LEVEL_LABEL[setting.permission_level] || setting.permission_level;
+        } catch (e) {
+          hint.textContent = '저장 실패: ' + e.message;
+        }
+      });
+    });
+  });
+}
+
+if (Hub.Admin.getToken() && Hub.Admin.isAdmin()) enterDash();
+</script>
+</body>
+</html>

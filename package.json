@@ -1,0 +1,9 @@
+{
+  "name": "mindcard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "부천시 청(소)년 외로움 마음돌봄 온라인 허브 - 마음카드 (정적 사이트, 빌드 불필요)",
+  "scripts": {
+    "test": "node --test"
+  }
+}

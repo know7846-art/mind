@@ -1,0 +1,58 @@
+/* 마음이 채팅 화면 (chat.html 전용) — hub.css의 색 변수를 그대로 사용 */
+.chat-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;
+}
+.chat-safety {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700;
+}
+.chat-safety[hidden] { display: none; }
+.chat-safety-close {
+  flex-shrink: 0; border: 1px solid rgba(255,255,255,.6); background: transparent; color: #fff;
+  border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 12px; cursor: pointer;
+}
+.chat-log {
+  display: flex; flex-direction: column; gap: 12px; padding: 16px 14px;
+  height: min(52vh, 460px); overflow-y: auto; scroll-behavior: smooth;
+}
+.msg { display: flex; gap: 8px; max-width: 92%; }
+.msg-bot { align-self: flex-start; }
+.msg-user { align-self: flex-end; flex-direction: row-reverse; }
+.msg-avatar {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.msg-bubble {
+  padding: 11px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.65;
+  background: #F6EFE6; color: var(--text-primary); border-top-left-radius: 4px;
+}
+.msg-bubble p { margin: 0; }
+.msg-bubble p + p { margin-top: 6px; }
+.msg-user .msg-bubble { background: var(--primary); color: #fff; border-top-left-radius: 16px; border-top-right-radius: 4px; }
+.msg.is-typing .msg-bubble { color: var(--text-muted); letter-spacing: 2px; }
+.msg-actions { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+.msg-action {
+  display: block; padding: 10px 12px; border-radius: 12px; background: #fff; color: var(--text-primary);
+  border: 1.5px solid var(--border); text-decoration: none; font-size: 13.5px; font-weight: 700; text-align: center;
+}
+.msg-action:hover { border-color: var(--primary); background: var(--primary-light); }
+.msg-action.is-danger { background: #FFF1EE; border-color: var(--primary-dark); color: var(--primary-dark); }
+.chat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px; }
+.chat-chip {
+  border: 1.5px solid var(--border); background: #fff; color: var(--text-secondary); border-radius: 999px;
+  padding: 8px 13px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.chat-chip:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-light); }
+.chat-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); }
+.chat-form input {
+  flex: 1; min-width: 0; padding: 12px 14px; border-radius: 999px; border: 1.5px solid var(--border);
+  font: inherit; font-size: 16px; background: #fff; color: var(--text-primary);
+}
+.chat-form input:focus { outline: none; border-color: var(--primary); }
+.chat-send {
+  flex-shrink: 0; border: none; border-radius: 999px; padding: 0 18px; background: var(--primary); color: #fff;
+  font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+}
+.chat-send:hover { background: var(--primary-dark); }
+.chat-privacy { margin: 10px 4px 0; text-align: center; font-size: 12px; color: var(--text-muted); }

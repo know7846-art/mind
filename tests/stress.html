@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>스트레스 자가체크 - 마음카드</title>
-<link rel="stylesheet" href="../css/hub.css?v=11">
+<link rel="stylesheet" href="../css/hub.css?v=13">
 </head>
 <body>
 <div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
@@ -13,7 +13,7 @@
   <div id="app"></div>
   <p class="disclaimer">본 검사는 의학적 진단이 아닌 간이 자가 점검 도구입니다.</p>
 </div>
-<script src="../js/hub-core.js?v=3"></script>
+<script src="../js/hub-core.js?v=15"></script>
 <script src="../js/test-engine.js?v=7"></script>
 <script>
 const opts4 = [
@@ -34,6 +34,18 @@ const TEST_CONFIG = {
     checklist: ['나의 스트레스 게이지 (0~30)', '지금 컨디션에 맞는 한 줄 조언', '필요할 때 도움받을 수 있는 곳'],
     cta: '내 스트레스 게이지 보기 →'
   },
+  about: {
+    title: '스트레스는 왜 쌓일까?',
+    body: `<p>스트레스는 몸과 마음이 "지금 감당하기 버겁다"고 보내는 신호예요. 적당한 긴장은 집중력을 높이기도 하지만, 오래 쌓이면 몸과 마음 모두에 티가 나기 시작해요.</p>
+      <p>특히 시험·과제·진로처럼 계속 평가받는 상황이 이어질 때 쉽게 쌓여요.</p>`
+  },
+  signs: [
+    '이유 없이 짜증이 늘고 예민해진다',
+    '잠을 자도 개운하지 않다',
+    '두통, 소화불량 등 몸의 통증이 잦아진다',
+    '집중이 잘 안 되고 작은 실수가 늘어난다',
+    '해야 할 일 앞에서 자꾸 미루게 된다'
+  ],
   basis: `이 검사는 <b>지각된 스트레스 척도(PSS, Perceived Stress Scale)</b> 등이 다루는 "통제감 상실", "압박감", "신체 증상" 같은 개념을 참고해서, 저희가 새로 작성한 10문항이에요.
     <ul>
       <li>PSS 원척도를 그대로 사용한 것이 아니라, 문항·채점 기준을 자체 제작했습니다. 표준화된 정식 심리검사가 아닙니다.</li>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>마음이에게 물어보기 - 마음카드</title>
+<meta name="description" content="상담 연결 방법, 센터 위치, 신청 방법을 알려주는 자동 안내 도우미 마음이예요.">
+<link rel="stylesheet" href="css/hub.css?v=13">
+<link rel="stylesheet" href="css/chat.css?v=1">
+</head>
+<body>
+<div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
+<div class="wrap test-page">
+  <a class="back-link" href="index.html">← 마음카드 홈</a>
+
+  <header class="hub-header" style="padding-top:0;">
+    <div class="hub-logo">💬 마음이</div>
+    <h1 class="hub-title" style="font-size:clamp(22px,5vw,30px);">궁금한 점,<br>편하게 물어보세요</h1>
+    <p class="hub-sub">상담 연결 방법을 안내해 주는 자동 도우미예요.<br>사람이 아니라서 실시간 상담은 어려워요.</p>
+  </header>
+
+  <section class="chat-card" aria-label="마음이 채팅">
+    <div class="chat-safety" id="chat-safety" hidden>
+      <span id="chat-safety-text"></span>
+      <button type="button" class="chat-safety-close" id="chat-safety-close" aria-label="안내 닫기">닫기</button>
+    </div>
+    <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="대화"></div>
+    <div class="chat-chips" id="chat-chips"></div>
+    <form class="chat-form" id="chat-form" autocomplete="off">
+      <input id="chat-input" type="text" maxlength="300" placeholder="궁금한 점을 적어주세요" aria-label="메시지 입력">
+      <button type="submit" class="chat-send">보내기</button>
+    </form>
+  </section>
+  <p class="chat-privacy">입력한 글은 저장되거나 전송되지 않아요. 화면을 닫으면 사라져요.</p>
+
+  <div id="cta-slot" style="margin-top:22px;"></div>
+
+  <p class="disclaimer">
+    마음이는 정해진 안내만 하는 자동 도우미이며, 상담이나 진단을 대신하지 않아요.
+  </p>
+</div>
+
+<script src="js/hub-core.js?v=15"></script>
+<script src="js/chatbot.js?v=1"></script>
+<script>
+Hub.log('visit', null, 'chat_page');
+
+const logEl = document.getElementById('chat-log');
+const inputEl = document.getElementById('chat-input');
+const safetyEl = document.getElementById('chat-safety');
+
+// 글은 항상 textContent로만 넣는다 (입력값이 HTML로 해석되지 않게)
+function addBubble(role, text, actions) {
+  const row = document.createElement('div');
+  row.className = 'msg msg-' + role;
+  if (role === 'bot') {
+    const av = document.createElement('span');
+    av.className = 'msg-avatar';
+    av.textContent = '💜';
+    av.setAttribute('aria-hidden', 'true');
+    row.appendChild(av);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  text.split('\n').forEach(line => {
+    const p = document.createElement('p');
+    // 전화번호는 하이픈에서 줄이 바뀌지 않도록 한 덩어리로 묶는다
+    line.split(/(\d{2,4}-\d{3,4}-\d{4})/).forEach((part, i) => {
+      if (i % 2) {
+        const num = document.createElement('span');
+        num.style.whiteSpace = 'nowrap';
+        num.textContent = part;
+        p.appendChild(num);
+      } else if (part) {
+        p.appendChild(document.createTextNode(part));
+      }
+    });
+    bubble.appendChild(p);
+  });
+  if (actions && actions.length) {
+    const box = document.createElement('div');
+    box.className = 'msg-actions';
+    actions.forEach(a => {
+      const link = document.createElement('a');
+      link.className = 'msg-action' + (a.danger ? ' is-danger' : '');
+      link.textContent = a.label;
+      // 같은 사이트 안 링크에만 ?src= 를 붙인다 (tel: 같은 건 그대로)
+      link.href = /^[a-z]+:/i.test(a.href) ? a.href : Hub.withSrc(a.href);
+      if (a.ext) { link.target = '_blank'; link.rel = 'noopener'; }
+      link.addEventListener('click', () => Hub.log('cta_click', 'chatbot', a.href.slice(0, 40)));
+      box.appendChild(link);
+    });
+    bubble.appendChild(box);
+  }
+  row.appendChild(bubble);
+  logEl.appendChild(row);
+  logEl.scrollTop = logEl.scrollHeight;
+  return row;
+}
+
+function showSafetyBar() {
+  const c = Hub.CENTER;
+  const t = document.getElementById('chat-safety-text');
+  t.textContent = `지금 많이 힘들다면  ☎ ${c.helpline} (24시간) · `;
+  const num = document.createElement('span');
+  num.style.whiteSpace = 'nowrap';
+  num.textContent = c.phone;
+  t.appendChild(num);
+  safetyEl.hidden = false;
+}
+document.getElementById('chat-safety-close').addEventListener('click', () => { safetyEl.hidden = true; });
+
+function send(text) {
+  text = String(text || '').trim();
+  if (!text) return;
+  addBubble('user', text);
+  inputEl.value = '';
+  const typing = addBubble('bot', '…');
+  typing.classList.add('is-typing');
+  setTimeout(() => {
+    typing.remove();
+    const r = Chatbot.reply(text);
+    addBubble('bot', r.text, r.actions);
+    if (r.urgent) showSafetyBar();
+    Hub.log('chat_intent', 'chatbot', r.intent); // 질문 종류만 기록, 입력한 글은 보내지 않음
+  }, 450);
+}
+
+document.getElementById('chat-form').addEventListener('submit', e => {
+  e.preventDefault();
+  send(inputEl.value);
+});
+
+const chipsEl = document.getElementById('chat-chips');
+Chatbot.chips().forEach(label => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chat-chip';
+  b.textContent = label;
+  b.addEventListener('click', () => send(label));
+  chipsEl.appendChild(b);
+});
+
+addBubble('bot', Chatbot.welcome());
+
+Hub.renderCTA(document.getElementById('cta-slot'), 'chatbot', false, {
+  leadText: '사람과 직접 이야기하고 싶다면 아래 방법으로 연락할 수 있어요. 카카오톡은 문의를 남기면 확인 후 답변드려요.',
+  hideChatLink: true
+});
+</script>
+</body>
+</html>

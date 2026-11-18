@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>지역연결 - 마음카드</title>
+<meta name="description" content="부천시 청(소)년 외로움 마음돌봄 거점과 기존 지원 프로그램, 바로 연락할 수 있는 창구를 한눈에 확인해요.">
+<link rel="stylesheet" href="css/hub.css?v=13">
+</head>
+<body>
+<div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
+<div class="wrap test-page">
+  <a class="back-link" href="index.html">← 마음카드 홈</a>
+
+  <header class="hub-header" style="padding-top:0;">
+    <div class="hub-logo">📍 지역연결</div>
+    <h1 class="hub-title" style="font-size:clamp(22px,5vw,30px);">가까운 곳에서<br>마음연결을 시작해요</h1>
+    <p class="hub-sub">검사 결과가 어떻든 괜찮아요. 가까운 거점이나 기존 프로그램을 먼저 둘러보고, 편한 방법으로 연락해보세요.</p>
+    <a class="btn-next" href="apply.html" style="display:block;text-decoration:none;text-align:center;margin-top:18px;">🤝 마음연결 신청하기</a>
+  </header>
+
+  <p class="section-title">📌 마음연결 거점</p>
+  <div id="place-list"></div>
+  <p class="location-note">※ 각 거점의 세부 운영 프로그램·상담 가능 시간은 사업 확정 후 순차적으로 안내될 예정이에요. 지금 바로 이야기하고 싶다면 아래 연락처를 먼저 이용해주세요.</p>
+
+  <p class="section-title">🧩 함께 운영되는 기존 프로그램</p>
+  <div class="program-grid">
+    <div class="program-card">
+      <p class="program-name">고요의 실</p>
+      <p class="program-desc">청(소)년들이 또래와 마음을 나누며 연결감을 회복해가는 커뮤니티 공간이에요.</p>
+    </div>
+    <div class="program-card">
+      <p class="program-name">청년 또래상담</p>
+      <p class="program-desc">비슷한 경험을 가진 또래가 먼저 손을 내밀어주는 상담·연결 프로그램이에요.</p>
+    </div>
+    <div class="program-card">
+      <p class="program-name">청소년안전망사업</p>
+      <p class="program-desc">위기 상황의 청소년을 지역사회가 함께 발견하고 지원하는 체계예요.</p>
+    </div>
+    <div class="program-card">
+      <p class="program-name">고위기청소년 집중심리클리닉 · 청소년동반자</p>
+      <p class="program-desc">전문가가 직접 찾아가 함께하며 깊이 있는 심리 지원을 제공해요.</p>
+    </div>
+  </div>
+
+  <div id="cta-slot" style="margin-top:28px;"></div>
+
+  <p class="disclaimer">
+    이 페이지의 거점 정보는 부천시 청(소)년 외로움 마음돌봄 프로젝트(2027) 사업계획을 바탕으로 작성되었으며,<br>
+    실제 운영 시점에 맞춰 내용이 바뀔 수 있어요.
+  </p>
+</div>
+
+<script src="js/hub-core.js?v=15"></script>
+<script>
+  Hub.log('visit', null, 'location_page');
+
+  const list = document.getElementById('place-list');
+  list.innerHTML = Hub.LOCATIONS.map(loc => `
+    <div class="place-card">
+      <div class="place-head">
+        <span class="place-badge">${loc.badge}</span>
+        <p class="place-name">${loc.name}</p>
+      </div>
+      <p class="place-address">${loc.address}</p>
+      <p class="place-desc">${loc.desc}</p>
+      <a class="place-map-link" href="${Hub.mapSearchUrl(loc.address)}" target="_blank" rel="noopener">🗺️ 지도에서 보기 →</a>
+    </div>
+  `).join('');
+
+  Hub.renderCTA(document.getElementById('cta-slot'), 'location_page', false, {
+    leadText: '거점이 멀거나 애매하게 느껴져도 괜찮아요. 아래 연락처로 먼저 이야기하면, 상황에 맞는 곳으로 편하게 연결해드려요.',
+    note: `${Hub.CENTER.name} · 만 9~24세 무료 상담 · 어디로 가야 할지 몰라도 일단 연락해도 돼요`
+  });
+</script>
+</body>
+</html>

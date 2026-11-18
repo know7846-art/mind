@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마음카드 - 신청 관리</title>
+<link rel="stylesheet" href="css/hub.css?v=13">
+<style>
+  .wrap { max-width: 1000px; }
+  #login-box { max-width: 340px; margin: 60px auto; text-align: center; }
+  #login-box input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 15px; box-sizing: border-box; }
+  #login-box button { width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
+  #login-box p.hint { font-size: 12px; color: var(--text-muted); margin-top: 14px; line-height: 1.6; }
+  .top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .nav-row { display: flex; gap: 8px; margin: 14px 0 20px; flex-wrap: wrap; }
+  .nav-row a { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-decoration: none; }
+  .nav-row a.current { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .filter-row { display: flex; gap: 6px; margin: 16px 0; flex-wrap: wrap; }
+  .filter-row button { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); cursor: pointer; }
+  .filter-row button.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .app-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; margin-bottom: 10px; }
+  .app-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .app-cat { font-size: 11.5px; font-weight: 800; color: var(--primary-dark); background: var(--primary-light); padding: 3px 10px; border-radius: 999px; display: inline-block; margin-bottom: 6px; }
+  .app-name { font-size: 15.5px; font-weight: 800; margin: 0; }
+  .app-meta { font-size: 12.5px; color: var(--text-secondary); margin: 2px 0 0; line-height: 1.6; }
+  .app-msg { font-size: 13px; color: var(--text-primary); margin: 10px 0 0; background: var(--bg-main); border-radius: 10px; padding: 10px 12px; line-height: 1.6; }
+  .status-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .status-new { background: #FFE3DC; color: var(--primary-dark); }
+  .status-contacted { background: #FFF4DC; color: #9A6100; }
+  .status-done { background: #E1F8F3; color: #1D7F88; }
+  .app-actions { display: flex; gap: 6px; margin-top: 12px; }
+  .app-actions button { flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; }
+  .app-actions button:hover { border-color: var(--primary); color: var(--primary-dark); }
+  #errorMsg { color: #D64545; text-align: center; font-size: 13.5px; margin: 20px 0; }
+</style>
+</head>
+<body data-no-footer>
+<div class="wrap">
+  <div id="login-box">
+    <h2>🔒 신청 관리자 로그인</h2>
+    <input type="email" id="email" placeholder="관리자 이메일" autocomplete="username">
+    <input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password">
+    <button id="btnLogin">로그인</button>
+    <p class="hint">Supabase 대시보드 → Authentication → Users에서 만든 관리자 계정으로 로그인하세요.</p>
+  </div>
+
+  <div id="dash" style="display:none;">
+    <header class="hub-header" style="text-align:left; padding:0;">
+      <div class="top-row">
+        <h1 class="hub-title" style="font-size:22px;">🤝 마음연결 신청 관리</h1>
+        <button id="btnLogout" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;">로그아웃</button>
+      </div>
+    </header>
+    <div class="nav-row">
+      <a href="admin-automation.html">설정</a>
+      <a href="admin-automation-inbox.html">승인 대기함 · 활동 기록</a>
+      <a href="applications-admin.html" class="current">신청 관리</a>
+      <a href="stats.html">유입 통계</a>
+    </div>
+    <div class="filter-row" id="filterRow"></div>
+    <div id="list"></div>
+  </div>
+
+  <p id="errorMsg" style="display:none;"></p>
+</div>
+
+<script src="js/hub-core.js?v=15"></script>
+<script>
+const STATUS_LABEL = { new: '신규', contacted: '연락완료', done: '처리완료' };
+let allApps = [];
+let filter = 'all';
+
+document.getElementById('btnLogin').addEventListener('click', doLogin);
+document.getElementById('btnLogout').addEventListener('click', () => { Hub.Admin.logout(); location.reload(); });
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('pw').value;
+  try {
+    await Hub.Admin.login(email, pw);
+    enterDash();
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function enterDash() {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  load();
+}
+
+async function load() {
+  try {
+    allApps = await Hub.Admin.fetchApplications();
+  } catch (e) {
+    showError(e.message);
+    if (!Hub.Admin.getToken()) { document.getElementById('dash').style.display = 'none'; document.getElementById('login-box').style.display = 'block'; }
+    return;
+  }
+  renderFilters();
+  renderList();
+}
+
+function renderFilters() {
+  const counts = { all: allApps.length, new: 0, contacted: 0, done: 0 };
+  allApps.forEach(a => { counts[a.status] = (counts[a.status] || 0) + 1; });
+  const row = document.getElementById('filterRow');
+  row.innerHTML = ['all', 'new', 'contacted', 'done'].map(k => `
+    <button data-k="${k}" class="${filter === k ? 'selected' : ''}">${k === 'all' ? '전체' : STATUS_LABEL[k]} (${counts[k] || 0})</button>
+  `).join('');
+  row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { filter = b.getAttribute('data-k'); renderFilters(); renderList(); }));
+}
+
+function renderList() {
+  const list = document.getElementById('list');
+  const rows = filter === 'all' ? allApps : allApps.filter(a => a.status === filter);
+  if (!rows.length) {
+    list.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:30px 0;">신청 내역이 없어요.</p>`;
+    return;
+  }
+  const CAT_LABEL = { pass: '마음연결 패스', coordinator: '코디네이터 지원', guardian_group: '보호자 자조모임' };
+  list.innerHTML = rows.map(a => {
+    const d = new Date(a.created_at);
+    const dateLabel = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `
+      <div class="app-card">
+        <div class="app-top">
+          <div>
+            <span class="app-cat">${CAT_LABEL[a.category] || a.category}</span>
+            <p class="app-name">${esc(a.name)} ${a.is_minor ? '(미성년)' : ''}</p>
+            <p class="app-meta">${a.birth_year}년생 · ${esc(a.phone)} · 희망: ${esc(a.preferred_location || '-')}</p>
+            ${a.is_minor || a.applicant_type === 'guardian' ? `<p class="app-meta">보호자: ${esc(a.guardian_name || '-')} (${esc(a.guardian_phone || '-')})</p>` : ''}
+            <p class="app-meta">접수 ${dateLabel} · ${a.src || 'direct'}</p>
+          </div>
+          <span class="status-badge status-${a.status}">${STATUS_LABEL[a.status] || a.status}</span>
+        </div>
+        ${a.message ? `<p class="app-msg">${esc(a.message)}</p>` : ''}
+        <div class="app-actions">
+          <button data-id="${a.id}" data-s="new">신규로</button>
+          <button data-id="${a.id}" data-s="contacted">연락완료로</button>
+          <button data-id="${a.id}" data-s="done">처리완료로</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.app-actions button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      const s = btn.getAttribute('data-s');
+      btn.disabled = true;
+      try {
+        await Hub.Admin.updateStatus(id, s);
+        const app = allApps.find(a => String(a.id) === String(id));
+        if (app) app.status = s;
+        renderFilters();
+        renderList();
+      } catch (e) {
+        showError(e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+if (Hub.Admin.getToken()) enterDash();
+</script>
+</body>
+</html>
