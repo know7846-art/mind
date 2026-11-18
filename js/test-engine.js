@@ -335,7 +335,6 @@ function runTest(config) {
   function backLink() {
     return `
       <a class="back-link" href="../index.html" style="display:block;text-align:center;margin-top:18px;">🌱 다른 검사 더 해보기</a>
-      <a class="back-link" href="../location.html" style="display:block;text-align:center;margin-top:6px;">📍 가까운 마음연결 거점 보기</a>
     `;
   }
 

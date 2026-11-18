@@ -1,4 +1,4 @@
-// 핵심 로직(날짜 계산, 참여 상태 분류, 관리자 토큰 디코딩, 지도/오늘의 한마디)에 대한 기본 테스트.
+// 공통 유틸(hub-core.js) 핵심 로직 테스트 — 관리자 토큰 디코딩, 유입경로, 센터 연결 안내(CTA), 지도 링크
 // 브라우저 전용 전역(localStorage, document 등)은 최소한으로 흉내만 낸다 — 실제 DOM/네트워크는 쓰지 않음.
 'use strict';
 const { test, beforeEach } = require('node:test');
@@ -28,24 +28,11 @@ global.document = {
 global.location = { pathname: '/', search: '', hostname: 'localhost' };
 global.fetch = async () => { throw new Error('이 테스트에서는 네트워크를 쓰지 않습니다'); };
 
-const { Hub, todayStr, daysAgo } = require('../js/hub-core.js');
+const { Hub } = require('../js/hub-core.js');
 
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
-});
-
-test('todayStr: 날짜를 YYYY-MM-DD로 포맷한다', () => {
-  assert.equal(todayStr(new Date(2026, 0, 5)), '2026-01-05');
-  assert.equal(todayStr(new Date(2026, 9, 15)), '2026-10-15');
-});
-
-test('daysAgo: 오늘로부터 며칠 전인지 올바르게 계산한다', () => {
-  const today = new Date();
-  const threeDaysAgo = new Date(today);
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-  assert.equal(daysAgo(todayStr(threeDaysAgo)), 3);
-  assert.equal(daysAgo(todayStr(today)), 0);
 });
 
 test('Hub.mapSearchUrl: 주소를 카카오맵 검색 링크로 인코딩한다', () => {
@@ -54,36 +41,16 @@ test('Hub.mapSearchUrl: 주소를 카카오맵 검색 링크로 인코딩한다'
   assert.ok(url.includes(encodeURIComponent('부천시 원미구 장말로 107')));
 });
 
-test('Hub.Quote.today: 같은 날엔 같은 문구를 결정적으로 반환한다', () => {
-  const q1 = Hub.Quote.today();
-  const q2 = Hub.Quote.today();
-  assert.equal(q1.id, q2.id);
-  assert.ok(q1.text.length > 0);
-  assert.ok(q1.tag.length > 0);
+test('Hub.CENTER: 온라인 상담 신청은 센터 홈페이지의 신청 화면을 가리킨다', () => {
+  assert.ok(Hub.CENTER.onlineApplyUrl.startsWith('https://www.bwyf.or.kr/mindclick/addCnsltReqstView.do?'));
+  assert.equal(Hub.CENTER.helpline, '1388');
 });
 
-test('Hub.Records.save: 하루에 한 건만 저장하고 같은 날짜는 덮어쓴다', () => {
-  Hub.Records.save('good', '첫 기록');
-  Hub.Records.save('tired', '수정된 기록');
-  const all = Hub.Records.getAll();
-  assert.equal(all.length, 1);
-  assert.equal(all[0].mood, 'tired');
-  assert.equal(all[0].note, '수정된 기록');
-});
-
-test('Hub.Records.classify: 기록이 없으면 "none"', () => {
-  assert.equal(Hub.Records.classify(), 'none');
-});
-
-test('Hub.Records.classify: 최근 14일 내 3회 이상이면 "candidate"', () => {
-  const today = new Date();
-  const records = [0, 1, 2].map((i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    return { date: todayStr(d), mood: 'good', note: '', ts: Date.now() };
-  });
-  localStorage.setItem('mc_records', JSON.stringify(records));
-  assert.equal(Hub.Records.classify(), 'candidate');
+test('Hub.withSrc: 유입경로가 있을 때만 ?src=를 붙인다', () => {
+  assert.equal(Hub.withSrc('tests/love.html'), 'tests/love.html');
+  localStorage.setItem('mc_src', 'insta');
+  assert.equal(Hub.withSrc('tests/love.html'), 'tests/love.html?src=insta');
+  assert.equal(Hub.withSrc('a.html?x=1'), 'a.html?x=1&src=insta');
 });
 
 test('Hub.Admin.decodeToken: 서명 검증 없이 JWT payload를 디코딩한다', () => {
@@ -93,8 +60,37 @@ test('Hub.Admin.decodeToken: 서명 검증 없이 JWT payload를 디코딩한다
   const decoded = Hub.Admin.decodeToken(fakeJwt);
   assert.equal(decoded.email, 'admin@mindcard.test');
   assert.equal(decoded.app_metadata.role, 'admin');
+  sessionStorage.setItem(Hub.Admin.TOKEN_KEY, fakeJwt);
+  assert.equal(Hub.Admin.isAdmin(), true);
 });
 
 test('Hub.Admin.decodeToken: 잘못된 토큰이면 null을 반환한다 (예외를 던지지 않음)', () => {
   assert.equal(Hub.Admin.decodeToken('not-a-valid-jwt'), null);
+  assert.equal(Hub.Admin.isAdmin(), false);
+});
+
+function renderCta(testId, urgent, opts) {
+  const box = { innerHTML: '', querySelectorAll: () => [] };
+  Hub.renderCTA(box, testId, urgent, opts);
+  return box.innerHTML;
+}
+
+test('Hub.renderCTA: 검사 후에는 마음이(챗봇) 안내가 가장 먼저 나오고, 어떤 검사였는지 함께 넘긴다', () => {
+  const html = renderCta('loneliness', false);
+  assert.ok(html.includes('chat.html?from=loneliness'));
+  assert.ok(html.indexOf('data-cta="chat"') < html.indexOf('data-cta="online_apply"'));
+  assert.ok(html.includes(Hub.CENTER.onlineApplyUrl));
+  assert.ok(html.includes('data-cta="phone"') && html.includes('data-cta="helpline"'));
+});
+
+test('Hub.renderCTA: 위기 구간(urgent)에서는 전화·상담 신청이 먼저, 챗봇은 맨 뒤', () => {
+  const html = renderCta('stress', true);
+  assert.ok(html.indexOf('data-cta="online_apply"') < html.indexOf('data-cta="chat"'));
+  assert.ok(html.indexOf('data-cta="helpline"') < html.indexOf('data-cta="chat"'));
+});
+
+test('Hub.renderCTA: 챗봇 화면에서는 챗봇 링크를 숨긴다', () => {
+  const html = renderCta('chatbot', false, { hideChatLink: true });
+  assert.ok(!html.includes('data-cta="chat"'));
+  assert.ok(html.includes('data-cta="online_apply"'));
 });

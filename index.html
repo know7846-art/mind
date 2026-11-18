@@ -16,22 +16,12 @@
     <div class="hub-logo">🌱 마음카드</div>
     <div class="date-chip" id="dateChip">📅 오늘의 마음카드</div>
     <h1 class="hub-title" id="homeTitle">오늘 내 마음은<br>어떤 색일까?</h1>
-    <p class="hub-sub" id="homeSub">마음 카드 한 장 뽑듯, 3분이면 충분해요.<br>나도 몰랐던 내 마음을 살짝 들여다봐요.</p>
+    <p class="hub-sub">마음 카드 한 장 뽑듯, 3분이면 충분해요.<br>나도 몰랐던 내 마음을 살짝 들여다봐요.</p>
     <div class="home-nav-row">
-      <a class="intro-meta-chip" href="record.html" id="recordChip">📝 오늘 마음 기록하기</a>
-      <a class="intro-meta-chip" href="my.html">🌤️ 마이</a>
-      <a class="intro-meta-chip" href="location.html">📍 가까운 거점 보기</a>
-      <a class="intro-meta-chip" href="apply.html">🤝 마음연결 신청</a>
       <a class="intro-meta-chip" href="chat.html">💬 마음이에게 물어보기</a>
     </div>
   </header>
 
-  <p class="section-title" style="text-align:center;">💬 오늘의 한마디</p>
-  <div class="quote-card" id="quoteCard">
-    <p class="quote-tag" id="quoteTag"></p>
-    <p class="quote-text" id="quoteText"></p>
-    <button class="quote-like-btn" id="quoteLikeBtn" type="button">🤍 공감해요 <span id="quoteLikeCount">0</span></button>
-  </div>
 
   <main class="cover-grid">
     <a class="cover-card cover-hero cv-tarot" data-hub-link="tarot/index.html" data-test="tarot">
@@ -133,7 +123,7 @@
   </p>
 </div>
 
-<script src="js/hub-core.js?v=15"></script>
+<script src="js/hub-core.js?v=16"></script>
 <script>
   Hub.log('visit', null, 'hub_home');
   document.querySelectorAll('.cover-card').forEach(card => {
@@ -145,52 +135,6 @@
     document.getElementById('dateChip').textContent = `📅 ${fmt}의 마음카드`;
   } catch (e) {}
 
-  // 기록 이력에 따라 홈 화면 문구만 살짝 다르게 — 화면/기능은 누구에게나 동일
-  try {
-    const state = Hub.Records.classify();
-    if (state !== 'none') {
-      const SUBS = {
-        light: '오늘도 가볍게 들러주셨네요. 검사 하나, 기록 하나만 남겨도 충분해요.',
-        candidate: '요즘 꾸준히 와주고 계시네요. 오늘 마음은 어떤가요?',
-        sustained: '몇 주째 꾸준히 와주고 계세요. 오늘도 가볍게 들여다봐요.'
-      };
-      if (SUBS[state]) document.getElementById('homeSub').innerHTML = SUBS[state];
-    }
-    if (Hub.Records.getToday()) {
-      document.getElementById('recordChip').textContent = '📝 오늘 기록 다시 보기';
-    }
-  } catch (e) {}
-
-  // 오늘의 한마디 (매일 바뀌는 가벼운 공감 멘트) — "마음카드"와는 별개 콘텐츠
-  (function () {
-    const q = Hub.Quote.today();
-    document.getElementById('quoteTag').textContent = `#${q.tag}`;
-    document.getElementById('quoteText').textContent = q.text;
-
-    const btn = document.getElementById('quoteLikeBtn');
-    const countEl = document.getElementById('quoteLikeCount');
-    let baseCount = 0;
-    let liked = Hub.Quote.hasLikedToday(q.id);
-
-    function render() {
-      countEl.textContent = baseCount + (liked ? 1 : 0);
-      btn.classList.toggle('liked', liked);
-      btn.firstChild.textContent = liked ? '💗 공감했어요 ' : '🤍 공감해요 ';
-    }
-    render();
-
-    Hub.Quote.likeCount(q.id).then(c => {
-      baseCount = liked ? Math.max(0, c - 1) : c; // 내 likeCount가 이미 반영되어 있을 수 있어 중복 방지
-      render();
-    });
-
-    btn.addEventListener('click', () => {
-      if (liked) return;
-      liked = true;
-      Hub.Quote.like(q.id);
-      render();
-    });
-  })();
 </script>
 </body>
 </html>

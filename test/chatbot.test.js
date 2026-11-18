@@ -4,18 +4,22 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { Chatbot, normalize } = require('../js/chatbot.js');
 
+const ONLINE = 'https://www.bwyf.or.kr/mindclick/addCnsltReqstView.do?reqstType=PERSON';
 const env = {
   CENTER: {
     name: '부천시청소년상담복지센터', phone: '032-325-3002', phoneHref: 'tel:032-325-3002',
-    helpline: '1388', helplineHref: 'tel:1388', kakaoUrl: 'https://pf.kakao.com/_smsxeK', kakaoName: '마인드클릭'
+    helpline: '1388', helplineHref: 'tel:1388', kakaoUrl: 'https://pf.kakao.com/_smsxeK', kakaoName: '마인드클릭',
+    onlineApplyUrl: ONLINE
   },
   LOCATIONS: [
-    { name: '원미센터', address: '부천시 원미구 장말로 107 복사골문화센터 3층' },
-    { name: '소사센터', address: '부천시 소사구 경인로 92번길 33 송내어울마당 5층' }
+    { name: '원미센터', badge: '청소년', address: '부천시 원미구 장말로 107 복사골문화센터 3층', desc: '청소년 대상 거점' },
+    { name: '소사센터', badge: '청소년', address: '부천시 소사구 경인로 92번길 33 송내어울마당 5층', desc: '청소년 대상 거점' },
+    { name: '오정센터', badge: '청소년', address: '부천시 오정구 소사로 780 원종청소년어울마당', desc: '청소년 대상 거점' },
+    { name: '학교밖청소년지원센터', badge: '학교밖', address: '부천시 소사구 경인로 92번길 33 송내어울마당 5층', desc: '학교 밖 청소년과 가족을 위한 상담·자립 지원' }
   ]
 };
 const reply = (t) => Chatbot.reply(t, env);
-const hrefs = (r) => r.actions.map(a => a.href);
+const hrefs = (r) => r.actions.map(a => a.href).filter(Boolean);
 
 test('normalize: 공백·문장부호를 없앤다', () => {
   assert.equal(normalize('  죽고 싶어요!! '), '죽고싶어요');
@@ -34,8 +38,9 @@ test('위기·위험·괴롭힘 표현은 항상 센터 고정 문구와 연락�
   }
 });
 
-test('안전 안내는 다른 질문 키워드보다 먼저 검사한다', () => {
+test('안전 안내는 다른 질문 키워드(상담 신청, 사는 곳)보다 먼저 검사한다', () => {
   assert.equal(reply('상담 받고 싶은데 죽고 싶어요').intent, 'safety');
+  assert.equal(reply('원미구에 사는데 살기 싫어요').intent, 'safety');
 });
 
 test('일상적인 과장 표현은 안전 안내로 오인하지 않는다', () => {
@@ -44,16 +49,22 @@ test('일상적인 과장 표현은 안전 안내로 오인하지 않는다', ()
   }
 });
 
-test('상담 방법 질문은 연결 방법 4가지를 안내한다', () => {
+test('상담 방법 질문은 온라인 상담 신청을 가장 먼저 안내한다', () => {
   const r = reply('상담은 어떻게 받아요?');
   assert.equal(r.intent, 'contact');
+  assert.ok(r.text.includes('온라인 상담 신청'));
   assert.ok(r.text.includes('실시간 대화는 아니고'));
+  assert.equal(r.actions[0].href, ONLINE);
   assert.ok(hrefs(r).includes('https://pf.kakao.com/_smsxeK'));
-  assert.ok(hrefs(r).includes('apply.html'));
 });
 
-test('감정 이야기와 상담 요청이 함께 오면 연결 안내가 우선한다', () => {
-  assert.equal(reply('친구 때문에 힘들어서 상담받고 싶어요').intent, 'contact');
+test('상담 신청 의사를 말하면 신청 화면으로 바로 가는 버튼이 첫 번째다', () => {
+  for (const s of ['온라인 상담 신청하고 싶어요', '상담사 선생님과 이야기하고 싶어요', '상담 예약하고 싶어요', '친구 때문에 힘들어서 상담받고 싶어요']) {
+    const r = reply(s);
+    assert.equal(r.intent, 'apply', s);
+    assert.equal(r.actions[0].href, ONLINE, s);
+    assert.equal(r.actions[0].ext, true, s);
+  }
 });
 
 test('전화번호·카카오톡·비용 질문', () => {
@@ -63,9 +74,33 @@ test('전화번호·카카오톡·비용 질문', () => {
   assert.ok(reply('비용이 드나요?').text.includes('만 9~24세 상담은 무료'));
 });
 
-test('위치 질문은 등록된 거점을 모두 보여준다', () => {
+test('가까운 센터를 물으면 사는 곳을 되묻고, 구 선택 버튼을 보여준다', () => {
   const r = reply('가까운 센터는 어디예요?');
   assert.equal(r.intent, 'where');
+  assert.ok(r.text.includes('사는 곳'));
+  assert.deepEqual(r.actions.filter(a => a.say).map(a => a.say).slice(0, 3), ['원미구', '소사구', '오정구']);
+});
+
+test('사는 곳(구·동네)을 말하면 가까운 센터와 지도 링크를 안내한다', () => {
+  const cases = [['원미구', '원미센터'], ['소사구에 살아요', '소사센터'], ['송내동이에요', '소사센터'], ['오정구', '오정센터'], ['원종동 살아요', '오정센터'], ['중동', '원미센터']];
+  for (const [s, center] of cases) {
+    const r = reply(s);
+    assert.equal(r.intent, 'area', s);
+    assert.ok(r.text.includes(center), s);
+    assert.ok(r.actions.some(a => a.href && a.href.startsWith('https://map.kakao.com/?q=') && a.label.includes(center)), s);
+    assert.ok(hrefs(r).includes('tel:032-325-3002'), s);
+    assert.ok(r.text.includes('전화로 먼저 확인'), s);
+  }
+});
+
+test('소사구는 학교밖청소년지원센터도 함께 안내한다', () => {
+  const r = reply('소사구');
+  assert.ok(r.text.includes('학교밖청소년지원센터'));
+});
+
+test('전체 센터 보기를 누르면 등록된 모든 거점을 보여준다', () => {
+  const r = reply('모든 센터 보여주세요');
+  assert.equal(r.intent, 'where_all');
   for (const l of env.LOCATIONS) assert.ok(r.text.includes(l.name) && r.text.includes(l.address));
 });
 
@@ -75,26 +110,43 @@ test('운영 시간은 모른다고 솔직히 말하고 전화로 안내한다',
   assert.ok(r.text.includes('정확히 알고 있지 않아요'));
 });
 
+test('검사 결과 질문은 진단이 아니라고 알리고 상담으로 이어준다', () => {
+  const r = reply('검사 결과가 궁금해요');
+  assert.equal(r.intent, 'result');
+  assert.ok(r.text.includes('진단이 아니라'));
+  assert.equal(r.actions[0].href, ONLINE);
+});
+
 test('마음 이야기는 사람과 이어지는 방법을 안내하고 안전 문구를 대신 쓰지 않는다', () => {
   for (const [s, intent] of [['요즘 너무 외로워요', 'lonely'], ['우울하고 무기력해요', 'mood'], ['시험 때문에 힘들어요', 'school'], ['스트레스 받아요', 'stress']]) {
     const r = reply(s);
     assert.equal(r.intent, intent, s);
     assert.equal(r.urgent, false, s);
-    assert.ok(r.actions.length > 0, s);
+    assert.equal(r.actions[0].href, ONLINE, s);
   }
 });
 
 test('이해하지 못한 말은 fallback으로 솔직하게 답하고 연락처를 보여준다', () => {
   const r = reply('asdf qwer');
   assert.equal(r.intent, 'fallback');
-  assert.ok(hrefs(r).includes('tel:1388'));
+  assert.ok(hrefs(r).includes('tel:032-325-3002'));
 });
 
-test('모든 답변은 텍스트가 있고, 모든 버튼은 label과 href를 가진다', () => {
-  const inputs = ['안녕', '고마워요', '신청하고 싶어요', '검사 결과가 궁금해요', '자녀가 걱정돼요', '넌 누구야', '비밀 지켜지나요', '취업 고민', '자존감이 낮아요', ''];
-  for (const s of [...inputs, ...Chatbot.chips()]) {
+test('검사 결과 화면에서 넘어오면 어떤 검사였는지 인사에 덧붙인다', () => {
+  assert.ok(Chatbot.welcome('loneliness').startsWith("'외로움 체크' 결과를 보고 오셨네요."));
+  assert.ok(!Chatbot.welcome('없는검사').includes('결과를 보고 오셨네요'));
+  assert.ok(!Chatbot.welcome().includes('결과를 보고 오셨네요'));
+});
+
+test('마음서랍 쪽 화면(신청·지역연결·마이)으로 가는 링크는 어떤 답변에도 없다', () => {
+  const inputs = ['안녕', '고마워요', '신청하고 싶어요', '검사 결과가 궁금해요', '자녀가 걱정돼요', '넌 누구야', '비밀 지켜지나요', '취업 고민', '자존감이 낮아요', '원미구', '가까운 센터', '', ...Chatbot.chips()];
+  for (const s of inputs) {
     const r = reply(s);
     assert.ok(r.text && r.text.length > 0, s);
-    for (const a of r.actions) assert.ok(a.label && a.href, s);
+    for (const a of r.actions) {
+      assert.ok(a.label, s);
+      assert.ok(a.href || a.say, s);
+      if (a.href) assert.ok(!/apply\.html|location\.html|my\.html|record\.html/.test(a.href), s + ' -> ' + a.href);
+    }
   }
 });

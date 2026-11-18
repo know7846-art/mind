@@ -20,9 +20,6 @@
   select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
   #errorMsg { color: #D64545; text-align: center; font-size: 13.5px; margin: 20px 0; }
   .top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .nav-row { display: flex; gap: 8px; margin: 14px 0 20px; flex-wrap: wrap; }
-  .nav-row a { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-decoration: none; }
-  .nav-row a.current { background: var(--primary); color: #fff; border-color: var(--primary); }
 </style>
 </head>
 <body data-no-footer>
@@ -47,13 +44,6 @@
       </select></p>
     </header>
 
-    <div class="nav-row">
-      <a href="admin-automation.html">설정</a>
-      <a href="admin-automation-inbox.html">승인 대기함 · 활동 기록</a>
-      <a href="applications-admin.html">신청 관리</a>
-      <a href="stats.html" class="current">유입 통계</a>
-    </div>
-
     <div class="stat-cards" id="summaryCards"></div>
 
     <h3>유입경로(src)별 현황</h3>
@@ -66,7 +56,7 @@
   <p id="errorMsg" style="display:none;"></p>
 </div>
 
-<script src="js/hub-core.js?v=15"></script>
+<script src="js/hub-core.js?v=16"></script>
 <script>
 document.getElementById('btnLogin').addEventListener('click', doLogin);
 document.getElementById('btnLogout').addEventListener('click', () => { Hub.Admin.logout(); location.reload(); });

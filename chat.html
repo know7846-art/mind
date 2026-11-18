@@ -6,7 +6,7 @@
 <title>마음이에게 물어보기 - 마음카드</title>
 <meta name="description" content="상담 연결 방법, 센터 위치, 신청 방법을 알려주는 자동 안내 도우미 마음이예요.">
 <link rel="stylesheet" href="css/hub.css?v=13">
-<link rel="stylesheet" href="css/chat.css?v=1">
+<link rel="stylesheet" href="css/chat.css?v=2">
 </head>
 <body>
 <div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
@@ -40,8 +40,8 @@
   </p>
 </div>
 
-<script src="js/hub-core.js?v=15"></script>
-<script src="js/chatbot.js?v=1"></script>
+<script src="js/hub-core.js?v=16"></script>
+<script src="js/chatbot.js?v=2"></script>
 <script>
 Hub.log('visit', null, 'chat_page');
 
@@ -81,6 +81,16 @@ function addBubble(role, text, actions) {
     const box = document.createElement('div');
     box.className = 'msg-actions';
     actions.forEach(a => {
+      // 눌러서 바로 말하기 버튼(예: 동네 선택) — 이동하지 않고 대화로 이어진다
+      if (a.say) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'msg-action msg-action-say';
+        btn.textContent = a.label;
+        btn.addEventListener('click', () => send(a.say));
+        box.appendChild(btn);
+        return;
+      }
       const link = document.createElement('a');
       link.className = 'msg-action' + (a.danger ? ' is-danger' : '');
       link.textContent = a.label;
@@ -141,7 +151,9 @@ Chatbot.chips().forEach(label => {
   chipsEl.appendChild(b);
 });
 
-addBubble('bot', Chatbot.welcome());
+// 검사 결과 화면에서 넘어온 경우(?from=검사이름) 어떤 검사였는지 인사에 덧붙인다
+const fromTest = new URLSearchParams(location.search).get('from');
+addBubble('bot', Chatbot.welcome(fromTest));
 
 Hub.renderCTA(document.getElementById('cta-slot'), 'chatbot', false, {
   leadText: '사람과 직접 이야기하고 싶다면 아래 방법으로 연락할 수 있어요. 카카오톡은 문의를 남기면 확인 후 답변드려요.',
