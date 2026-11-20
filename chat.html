@@ -6,7 +6,7 @@
 <title>마음이에게 물어보기 - 마음카드</title>
 <meta name="description" content="상담 연결 방법, 센터 위치, 신청 방법을 알려주는 자동 안내 도우미 마음이예요.">
 <link rel="stylesheet" href="css/hub.css?v=13">
-<link rel="stylesheet" href="css/chat.css?v=2">
+<link rel="stylesheet" href="css/chat.css?v=3">
 </head>
 <body>
 <div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
@@ -24,6 +24,20 @@
       <span id="chat-safety-text"></span>
       <button type="button" class="chat-safety-close" id="chat-safety-close" aria-label="안내 닫기">닫기</button>
     </div>
+    <div class="chat-ai" id="chat-ai" hidden>
+      <div class="chat-ai-row">
+        <span id="chat-ai-status">🤖 AI 답변이 꺼져 있어요</span>
+        <button type="button" class="chat-ai-btn" id="chat-ai-toggle">AI 답변 켜기</button>
+      </div>
+      <div class="chat-ai-consent" id="chat-ai-consent" hidden>
+        <div id="chat-ai-consent-text"></div>
+        <p class="chat-ai-policy"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침 보기</a></p>
+        <div class="chat-ai-consent-btns">
+          <button type="button" class="chat-ai-btn is-primary" id="chat-ai-agree">동의하고 켜기</button>
+          <button type="button" class="chat-ai-btn" id="chat-ai-cancel">취소</button>
+        </div>
+      </div>
+    </div>
     <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="대화"></div>
     <div class="chat-chips" id="chat-chips"></div>
     <form class="chat-form" id="chat-form" autocomplete="off">
@@ -31,17 +45,18 @@
       <button type="submit" class="chat-send">보내기</button>
     </form>
   </section>
-  <p class="chat-privacy">입력한 글은 저장되거나 전송되지 않아요. 화면을 닫으면 사라져요.</p>
+  <p class="chat-privacy" id="chat-privacy">입력한 글은 저장되거나 전송되지 않아요. 화면을 닫으면 사라져요.</p>
 
   <div id="cta-slot" style="margin-top:22px;"></div>
 
   <p class="disclaimer">
-    마음이는 정해진 안내만 하는 자동 도우미이며, 상담이나 진단을 대신하지 않아요.
+    마음이는 자동 안내 도우미이며, 상담이나 진단을 대신하지 않아요.<br>
+    <a href="privacy.html" style="color:inherit;">개인정보처리방침</a> · <a href="terms.html" style="color:inherit;">이용약관</a>
   </p>
 </div>
 
-<script src="js/hub-core.js?v=16"></script>
-<script src="js/chatbot.js?v=2"></script>
+<script src="js/hub-core.js?v=18"></script>
+<script src="js/chatbot.js?v=3"></script>
 <script>
 Hub.log('visit', null, 'chat_page');
 
@@ -50,7 +65,7 @@ const inputEl = document.getElementById('chat-input');
 const safetyEl = document.getElementById('chat-safety');
 
 // 글은 항상 textContent로만 넣는다 (입력값이 HTML로 해석되지 않게)
-function addBubble(role, text, actions) {
+function addBubble(role, text, actions, opts) {
   const row = document.createElement('div');
   row.className = 'msg msg-' + role;
   if (role === 'bot') {
@@ -77,6 +92,12 @@ function addBubble(role, text, actions) {
     });
     bubble.appendChild(p);
   });
+  if (opts && opts.aiTag) {
+    const tag = document.createElement('p');
+    tag.className = 'msg-ai-tag';
+    tag.textContent = 'AI가 만든 답변이에요. 틀릴 수 있어요.';
+    bubble.appendChild(tag);
+  }
   if (actions && actions.length) {
     const box = document.createElement('div');
     box.className = 'msg-actions';
@@ -120,20 +141,80 @@ function showSafetyBar() {
 }
 document.getElementById('chat-safety-close').addEventListener('click', () => { safetyEl.hidden = true; });
 
-function send(text) {
+// AI 답변은 이용자가 동의해서 켠 뒤(이 화면을 닫기 전까지)에만 쓰고, 켠 이후의 대화만 서버로 보낸다.
+// 위기 표현과 센터 정보(신청·전화·위치·비용 등)는 켜져 있어도 항상 규칙 기반 안내로만 답한다.
+let aiOn = false;
+let history = [];
+let sending = false;
+
+async function send(text) {
   text = String(text || '').trim();
-  if (!text) return;
+  if (!text || sending) return;
+  sending = true;
   addBubble('user', text);
   inputEl.value = '';
   const typing = addBubble('bot', '…');
   typing.classList.add('is-typing');
-  setTimeout(() => {
-    typing.remove();
-    const r = Chatbot.reply(text);
+
+  const r = Chatbot.reply(text);
+  let ai = null;
+  if (aiOn) {
+    history.push({ role: 'user', content: text });
+    if (Chatbot.wantsAI(r.intent)) {
+      ai = await Chatbot.askAI(history.slice(-8), { url: Hub.CHAT_AI.url, key: SUPABASE_KEY });
+    }
+  } else {
+    await new Promise(res => setTimeout(res, 450));
+  }
+  typing.remove();
+
+  if (ai && ai.ok && ai.safety) {
+    const s = Chatbot.safety();
+    addBubble('bot', s.text, s.actions);
+    showSafetyBar();
+  } else if (ai && ai.ok) {
+    addBubble('bot', ai.text, r.actions, { aiTag: true });
+    history.push({ role: 'assistant', content: ai.text });
+  } else {
+    // AI를 안 쓰는 말이거나 AI 호출이 실패하면 규칙 기반 안내로 답한다
     addBubble('bot', r.text, r.actions);
-    if (r.urgent) showSafetyBar();
-    Hub.log('chat_intent', 'chatbot', r.intent); // 질문 종류만 기록, 입력한 글은 보내지 않음
-  }, 450);
+    if (aiOn) history.push({ role: 'assistant', content: r.text });
+  }
+  if (r.urgent) showSafetyBar();
+  // 질문 종류만 기록하고, 입력한 글은 보내지 않는다
+  Hub.log('chat_intent', 'chatbot', r.intent + (ai ? (ai.ok ? ':ai' : ':ai_fail') : ''));
+  sending = false;
+}
+
+// ── AI 답변 켜기/끄기 (동의 절차) ──
+const aiBox = document.getElementById('chat-ai');
+const aiStatus = document.getElementById('chat-ai-status');
+const aiToggle = document.getElementById('chat-ai-toggle');
+const aiConsent = document.getElementById('chat-ai-consent');
+const privacyEl = document.getElementById('chat-privacy');
+function renderAI() {
+  aiStatus.textContent = aiOn ? '🤖 AI 답변이 켜져 있어요 (이 화면에서만)' : '🤖 AI 답변이 꺼져 있어요';
+  aiToggle.textContent = aiOn ? 'AI 답변 끄기' : 'AI 답변 켜기';
+  privacyEl.textContent = aiOn
+    ? 'AI 답변이 켜져 있어요. 입력한 글은 답변을 만들기 위해 외부 AI 서비스로 전송돼요. 개인정보는 적지 마세요.'
+    : '입력한 글은 저장되거나 전송되지 않아요. 화면을 닫으면 사라져요.';
+}
+if (Hub.CHAT_AI.enabled) {
+  aiBox.hidden = false;
+  document.getElementById('chat-ai-consent-text').textContent = Chatbot.consentText();
+  aiToggle.addEventListener('click', () => {
+    if (aiOn) { aiOn = false; history = []; aiConsent.hidden = true; renderAI(); }
+    else { aiConsent.hidden = !aiConsent.hidden; }
+  });
+  document.getElementById('chat-ai-cancel').addEventListener('click', () => { aiConsent.hidden = true; });
+  document.getElementById('chat-ai-agree').addEventListener('click', () => {
+    aiOn = true;
+    history = []; // 동의하기 전에 입력한 글은 AI로 보내지 않는다
+    aiConsent.hidden = true;
+    renderAI();
+    Hub.log('chat_intent', 'chatbot', 'ai_on');
+  });
+  renderAI();
 }
 
 document.getElementById('chat-form').addEventListener('submit', e => {
@@ -153,7 +234,7 @@ Chatbot.chips().forEach(label => {
 
 // 검사 결과 화면에서 넘어온 경우(?from=검사이름) 어떤 검사였는지 인사에 덧붙인다
 const fromTest = new URLSearchParams(location.search).get('from');
-addBubble('bot', Chatbot.welcome(fromTest));
+addBubble('bot', Chatbot.welcome(fromTest, Hub.CHAT_AI.enabled));
 
 Hub.renderCTA(document.getElementById('cta-slot'), 'chatbot', false, {
   leadText: '사람과 직접 이야기하고 싶다면 아래 방법으로 연락할 수 있어요. 카카오톡은 문의를 남기면 확인 후 답변드려요.',

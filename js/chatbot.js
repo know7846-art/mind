@@ -88,13 +88,52 @@ function buildActions(env) {
   };
 }
 
+// AI가 이어서 답하는 말: 마음 이야기와 규칙으로 이해하지 못한 말.
+// 위기·위험(safety), 센터 정보(신청·전화·위치·비용 등)는 항상 규칙 기반 안내로만 답한다 — 정확해야 하는 정보이기 때문.
+const AI_INTENTS = ['lonely', 'mood', 'esteem', 'friends', 'school', 'family', 'work', 'stress', 'guardian', 'fallback'];
+
+// AI 답변 사용 동의 안내 (개인정보 입력 주의 + 외부 AI 서비스 전송 고지)
+const AI_CONSENT_TEXT = [
+  'AI 답변을 켜면 지금부터 입력하는 글이 답변을 만들기 위해 외부 AI 서비스(Anthropic, 미국)로 전송돼요.',
+  '센터나 이 사이트에는 대화 내용이 저장되지 않아요. 다만 AI 서비스 쪽에서 일정 기간 보관될 수 있어요.',
+  '이름·연락처·학교·주소 같은 개인정보는 적지 마세요. AI 답변은 틀릴 수 있고 상담을 대신하지 않아요.'
+].join('\n');
+
 const Chatbot = {
   // 처음 인사 (검사 결과 화면에서 넘어온 경우 어떤 검사였는지 한 줄 덧붙임)
-  welcome(fromTestId) {
-    let t = '안녕하세요, 마음이예요 💜\n저는 검사 결과나 상담 연결에 대해 안내해 주는 자동 도우미예요. 사람이 아니라서 실시간 상담은 어렵지만, 상담을 신청하는 방법과 가까운 센터는 알려드릴 수 있어요.\n입력한 글은 저장되거나 전송되지 않아요.';
+  welcome(fromTestId, aiAvailable) {
+    let t = '안녕하세요, 마음이예요 💜\n저는 검사 결과나 상담 연결에 대해 안내해 주는 자동 도우미예요. 사람이 아니라서 실시간 상담은 어렵지만, 상담을 신청하는 방법과 가까운 센터는 알려드릴 수 있어요.\n' + (aiAvailable ? 'AI 답변은 아래에서 켜기를 눌러 동의하면 쓸 수 있어요. 켜기 전까지는 입력한 글이 저장되거나 전송되지 않아요.' : '입력한 글은 저장되거나 전송되지 않아요.');
     if (TEST_NAMES[fromTestId]) t = `'${TEST_NAMES[fromTestId]}' 결과를 보고 오셨네요.\n` + t;
     return t;
   },
+  // 위기 안내(고정 문구 + 연락처 버튼) — 서버가 위기 표현을 감지했을 때도 같은 안내를 쓴다
+  safety(envArg) {
+    const A = buildActions(getEnv(envArg));
+    return { intent: 'safety', text: SAFETY_TEXT, actions: [A.helpline, A.emergency, A.center], urgent: true };
+  },
+  wantsAI(intent) { return AI_INTENTS.includes(intent); },
+  // 서버 함수(mindi-chat)에 대화를 보내 AI 답변을 받는다. 실패하면 { ok:false } — 화면에서는 규칙 기반 안내로 대신한다.
+  async askAI(messages, cfg) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const res = await fetch(cfg.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.key, Authorization: `Bearer ${cfg.key}` },
+        body: JSON.stringify({ messages }),
+        signal: ctrl.signal
+      });
+      if (!res.ok) return { ok: false, reason: 'http_' + res.status };
+      const data = await res.json();
+      if (!data || typeof data.text !== 'string' || !data.text.trim()) return { ok: false, reason: 'empty' };
+      return { ok: true, text: data.text, safety: !!data.safety };
+    } catch (e) {
+      return { ok: false, reason: e && e.name === 'AbortError' ? 'timeout' : 'network' };
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+  consentText() { return AI_CONSENT_TEXT; },
   chips() {
     return [
       '상담은 어떻게 받아요?',
@@ -272,5 +311,5 @@ const Chatbot = {
 
 // 브라우저에서는 무시되고, Node 테스트 실행기에서만 내보냄
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { Chatbot, normalize };
+  module.exports = { Chatbot, normalize, RX, SAFETY_TEXT, AI_INTENTS };
 }

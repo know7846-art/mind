@@ -1,0 +1,14 @@
+/* 개인정보처리방침 · 이용약관 페이지 (privacy.html, terms.html) */
+.legal { font-size: 14px; line-height: 1.85; color: var(--text-secondary); }
+.legal h2 { margin: 28px 0 8px; font-size: 16px; color: var(--text-primary); }
+.legal p { margin: 0 0 10px; }
+.legal ul { margin: 0 0 12px; padding-left: 20px; }
+.legal li { margin-bottom: 4px; }
+.legal b { color: var(--text-primary); }
+.legal a { color: var(--primary-dark); }
+.legal table { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 13px; background: #fff; border-radius: 12px; overflow: hidden; }
+.legal th, .legal td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.legal th { background: var(--primary-light); color: var(--primary-dark); white-space: nowrap; }
+.legal-draft { margin: 0 0 18px; padding: 10px 14px; border-radius: 12px; background: #FFF4DE; color: #8A5A1E; font-size: 13px; line-height: 1.6; }
+.legal-fill { background: #FFF4DE; color: #8A5A1E; border-radius: 6px; padding: 0 5px; font-weight: 700; }
+@media (max-width: 520px) { .legal table { font-size: 12.5px; } .legal th { white-space: normal; } }

@@ -1,6 +1,6 @@
 -- 마음카드 허브 - 유입/이벤트 로그 테이블
 -- Supabase 프로젝트(SQL Editor)에서 한 번만 실행하세요.
--- (마음카드 전용 Supabase 프로젝트: https://pkaczonddvmhwwyhmxmt.supabase.co (프로젝트명: loneliness))
+-- (마음카드 전용 Supabase 프로젝트: https://ofdkzdfkxlpgetspizwf.supabase.co)
 
 create table if not exists hub_events (
   id bigint generated always as identity primary key,

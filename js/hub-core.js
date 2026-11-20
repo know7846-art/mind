@@ -2,8 +2,8 @@
  * 마음카드 - 공통 유틸 (유입경로 추적 + 이용 기록 + 센터 연결 안내)
  * Supabase는 이용 기록(hub_events)과 관리자 통계 로그인에만 씁니다. (supabase_setup.sql 참고)
  */
-const SUPABASE_URL = 'https://pkaczonddvmhwwyhmxmt.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Xj5xorln5c_LmjVtE9LOGg_qacUQFjf';
+const SUPABASE_URL = 'https://ofdkzdfkxlpgetspizwf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iV43wgrt-30YgYdf5dELrA__8pp6h5b';
 
 // ===== 부천시청소년상담복지센터 연결 정보 =====
 const CENTER = {
@@ -44,6 +44,13 @@ const LOCATIONS = [
   }
 ];
 
+// 마음이 AI 답변 — Supabase Edge Function(mindi-chat)을 배포하고 비밀값(ANTHROPIC_API_KEY)을 설정한 뒤 enabled를 true로 바꾼다.
+// false인 동안에는 규칙 기반 안내만 쓰고, 입력한 글은 어디로도 전송되지 않는다.
+const CHAT_AI = {
+  enabled: false,
+  url: `${SUPABASE_URL}/functions/v1/mindi-chat`
+};
+
 // 주소 문자열로 카카오맵 검색 링크 생성
 function mapSearchUrl(address) {
   return `https://map.kakao.com/?q=${encodeURIComponent(address)}`;
@@ -51,6 +58,7 @@ function mapSearchUrl(address) {
 
 const Hub = {
   CENTER,
+  CHAT_AI,
   LOCATIONS,
   mapSearchUrl,
 
@@ -219,12 +227,16 @@ Hub.renderFooter = function () {
   style.textContent = `
     .center-footer { max-width: 420px; margin: 28px auto 24px; text-align: center; box-sizing: border-box; width: calc(100% - 32px); }
     .center-logo { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
+    .center-footer-links { margin: 12px 0 0; font-size: 12px; color: #9CA8AC; }
+    .center-footer-links a { color: inherit; text-decoration: none; }
+    .center-footer-links a:hover { text-decoration: underline; }
   `;
   document.head.appendChild(style);
   const footer = document.createElement('footer');
   footer.className = 'center-footer';
   footer.innerHTML = `
     <img class="center-logo" src="${HUB_BASE}images/center-logo.jpg" alt="부천시청소년상담복지센터 · 부천시청소년지원센터 꿈드림">
+    <p class="center-footer-links"><a href="${HUB_BASE}privacy.html">개인정보처리방침</a> · <a href="${HUB_BASE}terms.html">이용약관</a></p>
   `;
   document.body.appendChild(footer);
 };
