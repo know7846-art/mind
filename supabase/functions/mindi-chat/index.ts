@@ -1,15 +1,21 @@
 // 마음이 AI 답변 — Supabase Edge Function (Deno)
-// - Anthropic API 키는 이 함수의 비밀값(ANTHROPIC_API_KEY)으로만 보관한다. 브라우저 코드에는 넣지 않는다.
+// - Google Gemini API 키는 이 함수의 비밀값(GEMINI_API_KEY)으로만 보관한다. 브라우저 코드에는 넣지 않는다.
 // - 이용자가 보낸 글은 저장·기록하지 않는다 (로그에는 상태 코드만 남김).
 // - 위기·위험 표현은 AI를 호출하지 않고 센터 고정 문구를 돌려준다.
-import { SAFETY_TEXT, buildRequest, isSafety, sanitizeReply, validateMessages } from './logic.mjs';
+import { SAFETY_TEXT, buildRequest, isSafety, readReply, safeModel, sanitizeReply, validateMessages } from './logic.mjs';
 
 const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'https://know7846-art.github.io')
   .split(',').map((s) => s.trim()).filter(Boolean);
-const MODEL = Deno.env.get('ANTHROPIC_MODEL') ?? 'claude-haiku-4-5-20251001';
-const API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+// 쓸 모델 순서. 앞 모델의 하루 한도가 차면(429) 다음 모델로 넘어간다 — 키 하나 안에서 모델별로 정해진 한도를 쓰는 것
+const MODELS = (Deno.env.get('GEMINI_MODELS') ?? Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite')
+  .split(',').map((m) => safeModel(m.trim(), '')).filter(Boolean);
+if (!MODELS.length) MODELS.push('gemini-3.5-flash-lite');
+// 한도가 찬 모델은 잠시 건너뛴다 (인스턴스 메모리 기준)
+const COOL_MS = 30 * 60 * 1000;
+const coolUntil = new Map<string, number>();
+const API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-// 같은 IP의 과다 호출 제한 (인스턴스 메모리 기준의 간단한 제한 — 총 사용 한도는 Anthropic 콘솔에서 따로 설정)
+// 같은 IP의 과다 호출 제한 (인스턴스 메모리 기준의 간단한 제한 — 총 사용 한도는 Google Cloud 결제 예산·할당량에서 따로 설정)
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 20;
 const hits = new Map<string, number[]>();
@@ -51,28 +57,32 @@ Deno.serve(async (req) => {
   const last = v.messages[v.messages.length - 1].content;
   if (isSafety(last)) return json({ safety: true, text: SAFETY_TEXT }, 200, cors);
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 15000);
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify(buildRequest(v.messages, MODEL)),
-      signal: ctrl.signal
-    });
-    if (!res.ok) {
-      console.error('anthropic status', res.status);
-      return json({ error: 'ai_unavailable' }, 502, cors);
+  const reqBody = JSON.stringify(buildRequest(v.messages, MODELS[0]));
+  const now = Date.now();
+  const order = MODELS.filter((m) => (coolUntil.get(m) ?? 0) <= now);
+  let quotaHit = false;
+  for (const model of (order.length ? order : MODELS)) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': API_KEY, 'content-type': 'application/json' },
+        body: model === MODELS[0] ? reqBody : JSON.stringify(buildRequest(v.messages, model)),
+        signal: ctrl.signal
+      });
+      if (res.status === 429) { quotaHit = true; coolUntil.set(model, Date.now() + COOL_MS); console.error('gemini quota', model); continue; }
+      if (!res.ok) { console.error('gemini status', model, res.status); continue; }
+      const data = await res.json();
+      const text = sanitizeReply(readReply(data));
+      if (!text) return json({ error: 'unsafe_reply' }, 502, cors);
+      return json({ text }, 200, cors);
+    } catch (e) {
+      console.error('gemini call failed', model, (e as Error).name);
+    } finally {
+      clearTimeout(timer);
     }
-    const data = await res.json();
-    const raw = (data.content ?? []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('');
-    const text = sanitizeReply(raw);
-    if (!text) return json({ error: 'unsafe_reply' }, 502, cors);
-    return json({ text }, 200, cors);
-  } catch (e) {
-    console.error('anthropic call failed', (e as Error).name);
-    return json({ error: 'ai_unavailable' }, 502, cors);
-  } finally {
-    clearTimeout(timer);
   }
+  // 모든 모델이 한도에 걸렸거나 실패 → 화면은 정해진 안내로 답한다
+  return json({ error: quotaHit ? 'quota_exhausted' : 'ai_unavailable' }, quotaHit ? 429 : 502, cors);
 });

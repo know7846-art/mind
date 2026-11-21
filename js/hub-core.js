@@ -44,10 +44,10 @@ const LOCATIONS = [
   }
 ];
 
-// 마음이 AI 답변 — Supabase Edge Function(mindi-chat)을 배포하고 비밀값(ANTHROPIC_API_KEY)을 설정한 뒤 enabled를 true로 바꾼다.
+// 마음이 AI 답변 — Supabase Edge Function(mindi-chat)을 배포하고 비밀값(GEMINI_API_KEY)을 설정한 뒤 enabled를 true로 바꾼다.
 // false인 동안에는 규칙 기반 안내만 쓰고, 입력한 글은 어디로도 전송되지 않는다.
 const CHAT_AI = {
-  enabled: false,
+  enabled: true,
   url: `${SUPABASE_URL}/functions/v1/mindi-chat`
 };
 

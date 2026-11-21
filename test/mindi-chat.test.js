@@ -71,10 +71,19 @@ test('서버 함수: 지침(system prompt)에 쓴 번호는 모두 허용 목록
   for (const n of nums) assert.ok(['032-325-3002', '1388', '109'].includes(n), '허용 목록 밖의 번호: ' + n);
   assert.ok(L.SYSTEM_PROMPT.includes('AI이며 사람 상담사가 아닙니다'));
   assert.ok(L.SYSTEM_PROMPT.includes('진단'));
-  const req = L.buildRequest([{ role: 'user', content: '안녕' }], 'test-model');
-  assert.equal(req.model, 'test-model');
-  assert.ok(req.max_tokens <= 500);
-  assert.equal(req.system, L.SYSTEM_PROMPT);
+  const req = L.buildRequest([{ role: 'user', content: '안녕' }, { role: 'assistant', content: '반가워요' }, { role: 'user', content: '힘들어' }], 'gemini-2.5-flash');
+  assert.ok(req.generationConfig.maxOutputTokens <= 1000);
+  assert.equal(req.systemInstruction.parts[0].text, L.SYSTEM_PROMPT);
+  assert.deepEqual(req.contents.map(c => c.role), ['user', 'model', 'user']);
+  assert.equal(req.contents[2].parts[0].text, '힘들어');
+  assert.deepEqual(req.generationConfig.thinkingConfig, { thinkingBudget: 0 });
+  assert.equal(L.buildRequest([{ role: 'user', content: '안녕' }], 'gemini-3-flash').generationConfig.thinkingConfig, undefined);
+  // 응답 읽기: 정상 / 차단 / 빈 응답
+  assert.equal(L.readReply({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: '많이 ' }, { text: '힘들었겠어요' }] } }] }), '많이 힘들었겠어요');
+  assert.equal(L.readReply({ candidates: [{ finishReason: 'SAFETY', content: { parts: [{ text: 'x' }] } }] }), '');
+  assert.equal(L.readReply({ promptFeedback: { blockReason: 'SAFETY' } }), '');
+  assert.equal(L.safeModel('gemini-2.5-flash', 'd'), 'gemini-2.5-flash');
+  assert.equal(L.safeModel('../../evil?x=1', 'd'), 'd');
 });
 
 test('AI가 답하는 말은 마음 이야기와 이해하지 못한 말뿐이다 — 위기·센터 정보는 항상 규칙 기반', () => {

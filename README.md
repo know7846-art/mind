@@ -13,7 +13,7 @@
 - `tests/*.html` — 검사 7종 (`loneliness` 외로움 · `stress` 스트레스 · `mood` 마음날씨 · `love` 연애 스타일 · `esteem` 자존감 · `burnout` 무기력 · `jobburnout` 번아웃)
 - `tarot/` — 고민타파 타로 (78장, 카드 3장 뽑기)
 - `chat.html` + `js/chatbot.js` + `css/chat.css` — 마음이 챗봇 (아래 참고)
-- `supabase/functions/mindi-chat/` — AI 답변 서버 함수(`index.ts`)와 순수 로직(`logic.mjs`, 테스트 대상)
+- `supabase/functions/mindi-chat/` — AI 답변 서버 함수: `index.ts`(진입점), `logic.mjs`(순수 로직, 테스트 대상), `paste-into-dashboard.ts`(대시보드에 붙여넣는 합본, `build-single.mjs`로 생성)
 - `privacy.html`, `terms.html`, `css/legal.css` — 개인정보처리방침·이용약관(초안)
 - `stats.html` — 관리자 통계 (Supabase 관리자 로그인 필요)
 - `js/hub-core.js` — 유입경로(src) 추적, 이용 기록, 센터 연결 정보(`CENTER`), 가까운 센터 데이터(`LOCATIONS`), 결과 화면 안내(`renderCTA`), 하단 센터 로고
@@ -31,20 +31,26 @@
 - 서버에는 질문 **종류**(예: `apply`, `area`, `lonely:ai`)만 익명으로 기록하고, 입력한 글은 기록하지 않습니다.
 
 ## AI 답변 연결 (Supabase Edge Function)
-구조: 브라우저 → `supabase/functions/mindi-chat`(서버 함수) → Anthropic API. API 키는 서버 함수의 비밀값으로만 두고 코드에는 넣지 않습니다.
+구조: 브라우저 → `supabase/functions/mindi-chat`(서버 함수) → Google Gemini API. API 키는 서버 함수의 비밀값으로만 두고 코드에는 넣지 않습니다.
 - **AI가 답하는 말**: 마음 이야기(외로움·우울·친구·학교·가족 등)와 규칙으로 이해하지 못한 말. **센터 정보(신청·전화·위치·비용)와 위기 표현은 항상 규칙 기반**으로 답합니다.
 - **동의 후에만 켜짐**: 채팅 화면의 "AI 답변 켜기"에서 외부 전송 안내를 확인하고 동의해야 하며, 화면을 닫으면 다시 꺼집니다. 동의 전에 입력한 글은 AI로 보내지 않습니다.
 - **서버 함수의 방어**: 위기 표현 재검사(AI 호출 안 함), 요청 길이 제한, IP별 호출 제한, 허용 주소(CORS) 확인, AI 답변에 지어낸 전화번호·인터넷 주소가 섞이면 폐기, 대화 내용 미저장(로그에는 상태 코드만).
 - 실패(키 없음·한도 초과·네트워크 오류)하면 화면은 자동으로 규칙 기반 안내로 답합니다.
 
-**배포 순서** (한 번만)
-1. Supabase CLI 설치 후 로그인, 프로젝트 연결: `supabase link --project-ref <프로젝트ref>`
-2. 비밀값 등록: `supabase secrets set ANTHROPIC_API_KEY=<Anthropic API 키> ALLOWED_ORIGINS=https://know7846-art.github.io`
-   (모델을 바꾸려면 `ANTHROPIC_MODEL=<모델 ID>` 추가, 기본값은 `claude-haiku-4-5-20251001`)
-3. 함수 배포: `supabase functions deploy mindi-chat`
-4. Anthropic 콘솔에서 **월 사용 한도**를 설정합니다(공개 사이트라 한도가 없으면 비용이 계속 늘 수 있어요).
-5. `js/hub-core.js`의 `CHAT_AI.enabled`를 `true`로 바꾸고 `hub-core.js` 캐시 버전을 올려 배포합니다.
-6. 채팅 화면에서 AI 답변을 켜고, 마음 이야기·상담 신청·위기 표현을 각각 입력해 확인합니다.
+**배포 순서** (Supabase 대시보드 방식, 한 번만)
+1. 대시보드 → **Edge Functions** → **Deploy a new function**(Via Editor) → 이름을 `mindi-chat`으로 입력하고, `supabase/functions/mindi-chat/paste-into-dashboard.ts`의 **전체 내용**을 붙여넣어 배포합니다.
+   (원본 `index.ts`/`logic.mjs`를 고쳤다면 `node supabase/functions/mindi-chat/build-single.mjs`로 이 파일을 다시 만든 뒤 붙여넣으세요. 테스트가 최신 여부를 검사합니다.)
+2. 배포한 함수의 설정(Function Settings)에서 **`Verify JWT`를 끕니다.** 새 방식의 공개 키(`sb_publishable_…`)는 JWT가 아니라서 켜져 있으면 요청이 게이트웨이에서 거절됩니다. 대신 함수 안에서 허용 주소 확인, 호출 횟수 제한, 입력 길이 제한을 합니다.
+3. **Edge Functions → Secrets**에서 비밀값을 등록합니다.
+   - `GEMINI_API_KEY` = Google AI Studio에서 만든 Gemini API 키 (채팅·코드·문서에 적지 마세요)
+   - `ALLOWED_ORIGINS` = `https://know7846-art.github.io` (여러 개면 쉼표로 구분, 생략하면 이 값이 기본)
+   - (선택) `GEMINI_MODELS` = 쓸 모델 순서(쉼표 구분), 기본값 `gemini-3.5-flash-lite,gemini-3.1-flash-lite` (2.5 모델은 2026년 11월 기준 새 키에서 쓸 수 없음). 앞 모델의 하루 한도가 차면(429) 다음 모델로 넘어가고, 모두 차면 화면은 정해진 안내로 답합니다.
+4. 키가 속한 Google Cloud 프로젝트에 **결제(유료 등급)를 연결**하고 **예산 알림·할당량**을 설정합니다. 무료 등급은 입력한 글이 Google 서비스 개선에 쓰일 수 있어 청소년 대화에는 쓰지 않습니다. 공개 사이트라 한도가 없으면 비용이 계속 늘 수 있어요.
+5. 동작 확인(키는 서버에만 있으니 이 단계는 공개 주소로 호출): 정상 질문 → 답이 오는지, 위기 표현 → 고정 문구가 오는지, 다른 주소(Origin)에서 호출 → 403이 나는지 확인합니다.
+6. `js/hub-core.js`의 `CHAT_AI.enabled`를 `true`로 바꾸고 `hub-core.js` 캐시 버전을 올려 배포합니다.
+7. 채팅 화면에서 AI 답변을 켜고, 마음 이야기·상담 신청·위기 표현을 각각 입력해 확인합니다.
+
+(명령줄을 쓰는 경우: `supabase functions deploy mindi-chat --no-verify-jwt` 와 `supabase secrets set ...`)
 
 ## 개인정보처리방침 · 이용약관
 `privacy.html`, `terms.html` — 모든 페이지 하단 링크에서 열립니다. 실제 코드가 하는 일(이용 기록 항목, 브라우저 저장값, AI 답변 사용 시 외부 전송 등)을 기준으로 쓴 **초안**이며, 노란색 표시(보유 기간·개인정보 보호책임자·시행일·Supabase 보관 지역)는 센터 확정 후 채우고 법률·개인정보 담당 검토를 거쳐야 합니다. 확정 후 문서 위쪽의 "초안" 안내 문구(`legal-draft`)를 지우세요. 수집 항목이나 외부 서비스가 바뀌면 이 문서도 함께 고쳐야 합니다.
