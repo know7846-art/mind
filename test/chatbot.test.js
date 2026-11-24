@@ -117,12 +117,22 @@ test('검사 결과 질문은 진단이 아니라고 알리고 상담으로 이�
   assert.equal(r.actions[0].href, ONLINE);
 });
 
-test('마음 이야기는 사람과 이어지는 방법을 안내하고 안전 문구를 대신 쓰지 않는다', () => {
+test('마음 이야기는 먼저 공감과 해볼 수 있는 방법을 알려주고, 상담은 뒤에 선택지로 둔다', () => {
   for (const [s, intent] of [['요즘 너무 외로워요', 'lonely'], ['우울하고 무기력해요', 'mood'], ['시험 때문에 힘들어요', 'school'], ['스트레스 받아요', 'stress']]) {
     const r = reply(s);
     assert.equal(r.intent, intent, s);
     assert.equal(r.urgent, false, s);
-    assert.equal(r.actions[0].href, ONLINE, s);
+    assert.ok(r.text.includes('•'), s + ' — 해볼 수 있는 방법이 있어야 해요');
+    assert.notEqual(r.actions[0].href, ONLINE, s + ' — 상담 신청이 첫 버튼이면 안 돼요');
+    assert.ok(hrefs(r).includes(ONLINE), s + ' — 상담 신청은 선택지로 남아 있어야 해요');
+  }
+});
+
+test('상담에 대한 궁금증·오해에는 먼저 설명으로 답한다', () => {
+  for (const s of ['상담은 뭐 하는 거예요?', '상담 받으면 부모님이 알아요?', '상담은 이상한 사람만 받는 거 아니에요?']) {
+    const r = reply(s);
+    assert.equal(r.intent, 'about', s);
+    assert.ok(r.text.includes('문제가 있는 사람만 받는 게 아니에요'), s);
   }
 });
 

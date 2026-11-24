@@ -56,7 +56,7 @@
 </div>
 
 <script src="js/hub-core.js?v=19"></script>
-<script src="js/chatbot.js?v=4"></script>
+<script src="js/chatbot.js?v=5"></script>
 <script>
 Hub.log('visit', null, 'chat_page');
 
@@ -173,7 +173,10 @@ async function send(text) {
     addBubble('bot', s.text, s.actions);
     showSafetyBar();
   } else if (ai && ai.ok) {
-    addBubble('bot', ai.text, r.actions, { aiTag: true });
+    // AI가 상담을 권한 답에만 상담 버튼까지 보여 주고, 아니면 검사·질문 버튼만 둔다
+    const suggests = /상담|선생님과 이야기|센터/.test(ai.text);
+    const acts = suggests ? r.actions : r.actions.filter(a => a.say || (a.href && a.href.indexOf('tests/') === 0));
+    addBubble('bot', ai.text, acts, { aiTag: true });
     history.push({ role: 'assistant', content: ai.text });
   } else {
     // AI를 안 쓰는 말이거나 AI 호출이 실패하면 규칙 기반 안내로 답한다
