@@ -38,6 +38,7 @@
 }
 .msg-action:hover { border-color: var(--primary); background: var(--primary-light); }
 .msg-action.is-danger { background: #FFF1EE; border-color: var(--primary-dark); color: var(--primary-dark); }
+.chat-chips[hidden] { display: none; }
 .chat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px; }
 .chat-chip {
   border: 1.5px solid var(--border); background: #fff; color: var(--text-secondary); border-radius: 999px;

@@ -6,7 +6,7 @@
 <title>마음이에게 물어보기 - 마음카드</title>
 <meta name="description" content="상담 연결 방법, 센터 위치, 신청 방법을 알려주는 자동 안내 도우미 마음이예요.">
 <link rel="stylesheet" href="css/hub.css?v=13">
-<link rel="stylesheet" href="css/chat.css?v=3">
+<link rel="stylesheet" href="css/chat.css?v=4">
 </head>
 <body>
 <div class="bg-blob-layer"><span class="bg-blob b1"></span><span class="bg-blob b2"></span><span class="bg-blob b3"></span></div>
@@ -151,6 +151,9 @@ async function send(text) {
   text = String(text || '').trim();
   if (!text || sending) return;
   sending = true;
+  // 대화를 시작하면 추천 질문 줄을 숨겨 대화창이 위로 밀리지 않게 한다
+  const chipsBox = document.getElementById('chat-chips');
+  if (chipsBox) chipsBox.hidden = true;
   addBubble('user', text);
   inputEl.value = '';
   const typing = addBubble('bot', '…');
